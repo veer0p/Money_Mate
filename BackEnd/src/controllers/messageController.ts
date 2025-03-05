@@ -3,17 +3,16 @@ import { Message } from "../models/messageModel";
 import User from "../models/userModel";
 import { v4 as uuidv4 } from "uuid";
 
-// Store message API
+// Store single or multiple messages API
 export const storeMessage = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { user_id, sender, message_body } = req.body;
+    const { user_id, messages, sender, message_body } = req.body;
 
-    // Validate request body
-    if (!user_id || !sender || !message_body) {
-      res.status(400).json({ message: "All fields are required" });
+    if (!user_id) {
+      res.status(400).json({ message: "User ID is required" });
       return;
     }
 
@@ -24,24 +23,56 @@ export const storeMessage = async (
       return;
     }
 
-    // Save message to DB
-    const message = await Message.create({
-      id: uuidv4(), // Generate unique ID
-      user_id,
-      sender,
-      message_body,
-      status: "received",
-    });
+    let messagesArray = [];
+
+    // If only one message is sent (auto-forwarding case)
+    if (sender && message_body) {
+      messagesArray.push({ sender, message_body });
+    }
+    // If multiple messages are sent (sync case)
+    else if (Array.isArray(messages) && messages.length > 0) {
+      messagesArray = messages;
+    } else {
+      res.status(400).json({ message: "Invalid request format" });
+      return;
+    }
+
+    const uniqueMessages = [];
+
+    for (const msg of messagesArray) {
+      const { sender, message_body } = msg;
+
+      if (!sender || !message_body) continue; // Skip invalid messages
+
+      // Check if message already exists
+      const existingMessage = await Message.findOne({
+        where: { user_id, sender, message_body },
+      });
+
+      if (!existingMessage) {
+        uniqueMessages.push({
+          id: uuidv4(),
+          user_id,
+          sender,
+          message_body,
+          status: "received",
+        });
+      }
+    }
+
+    if (uniqueMessages.length > 0) {
+      await Message.bulkCreate(uniqueMessages);
+    }
 
     res.status(201).json({
-      message: "Message stored successfully",
-      data: message,
+      message: `${uniqueMessages.length} new messages stored successfully`,
     });
   } catch (error: unknown) {
     const err = error as Error;
-    console.error("Error storing message:", err.message);
+    console.error("Error storing messages:", err.message);
     res
       .status(500)
       .json({ message: "Internal server error", error: err.message });
   }
+  console.log(res);
 };

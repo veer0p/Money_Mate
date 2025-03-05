@@ -46,7 +46,8 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" })); // Increase JSON body limit
+app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Increase URL-encoded body limit
 
 app.get("/", (req, res) => {
   res.send("Server is Live 🚀");
