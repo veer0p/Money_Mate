@@ -137,41 +137,45 @@ export const verifyEmail = async (
  * @route POST /api/auth/login
  */
 export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ where: { email } });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      res.status(401).json({ message: "Invalid email or password" });
-      return;
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            res.status(401).json({ message: "Invalid email or password" });
+            return;
+        }
+
+        if (!user.is_verified) {
+            res.status(403).json({ message: "Please verify your email" });
+            return;
+        }
+
+        // If 2FA is enabled, send OTP instead of logging in
+        if (user.is_2fa_enabled) {
+            const otp = generateOTP();
+            const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+            await user.update({ otp, otp_expires_at: otpExpires });
+            await sendEmail(email, "Your Login OTP", `Your OTP: ${otp}`);
+
+            res.json({ message: "OTP sent to email. Please verify to continue." });
+            return;
+        }
+
+        // Normal login flow (without 2FA)
+        const token = generateToken(user.id, user.role ?? "user");
+        const refreshToken = generateRefreshToken(user.id);
+
+        res.json({
+            message: "Login successful",
+            userId: user.id, // Include user ID in the response
+            token,
+            refreshToken,
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Login failed", error });
     }
-
-    if (!user.is_verified) {
-      res.status(403).json({ message: "Please verify your email" });
-      return;
-    }
-
-    // If 2FA is enabled, send OTP instead of logging in
-    if (user.is_2fa_enabled) {
-      const otp = generateOTP();
-      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-      await user.update({ otp, otp_expires_at: otpExpires });
-
-      await sendEmail(email, "Your Login OTP", `Your OTP: ${otp}`);
-
-      res.json({ message: "OTP sent to email. Please verify to continue." });
-      return;
-    }
-
-    // Normal login flow (no 2FA)
-    const token = generateToken(user.id, user.role ?? "user");
-    const refreshToken = generateRefreshToken(user.id);
-
-    res.json({ message: "Login successful", token, refreshToken });
-  } catch (error) {
-    res.status(500).json({ message: "Login failed", error });
-  }
 };
 
 export const verifyLoginOTP = async (req: Request, res: Response) => {
