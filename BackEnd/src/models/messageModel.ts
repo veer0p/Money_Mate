@@ -18,7 +18,7 @@ Message.init(
         model: User,
         key: "id",
       },
-      onDelete: "CASCADE", // This ensures messages get deleted when the user is deleted
+      onDelete: "CASCADE", // Ensures messages get deleted when the user is deleted
     },
     sender: {
       type: DataTypes.STRING,
@@ -32,10 +32,21 @@ Message.init(
       type: DataTypes.ENUM("received", "sent"),
       defaultValue: "received",
     },
+    received_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   },
   {
     sequelize,
     modelName: "Message",
+    indexes: [
+      {
+        unique: true, // Add a unique constraint
+        fields: ["user_id", "sender", "message_body"], // Composite unique key
+        name: "unique_message", // Optional: Name the constraint
+      },
+    ],
   }
 );
 
