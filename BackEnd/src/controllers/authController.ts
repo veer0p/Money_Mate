@@ -16,43 +16,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
  * @desc Register a new user
  * @route POST /api/auth/signup
  */
-// export const signup = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const { first_name, last_name, email, password, phone_number } = req.body;
-
-//     const existingUser = await User.findOne({ where: { email } });
-//     if (existingUser) {
-//       res.status(400).json({ message: "Email already in use" });
-//       return;
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const emailOTP = generateOTP();
-//     const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-//     await User.create({
-//       first_name,
-//       last_name,
-//       email,
-//       phone_number,
-//       password: hashedPassword,
-//       email_verification_otp: emailOTP,
-//       otp_expires_at: otpExpires,
-//       is_verified: false,
-//     });
-
-//     await sendEmail(email, "Verify Your Email", `Your OTP: ${emailOTP}`);
-
-//     res
-//       .status(201)
-//       .json({ message: "User registered. Verify your email with OTP." });
-//   } catch (error: unknown) {
-//     const err = error as Error;
-//     res
-//       .status(500)
-//       .json({ message: "User registration failed", error: err.message });
-//   }
-// };
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
     const { first_name, last_name, email, password, phone_number } = req.body;
@@ -137,45 +100,45 @@ export const verifyEmail = async (
  * @route POST /api/auth/login
  */
 export const login = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ where: { email } });
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            res.status(401).json({ message: "Invalid email or password" });
-            return;
-        }
-
-        if (!user.is_verified) {
-            res.status(403).json({ message: "Please verify your email" });
-            return;
-        }
-
-        // If 2FA is enabled, send OTP instead of logging in
-        if (user.is_2fa_enabled) {
-            const otp = generateOTP();
-            const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-            await user.update({ otp, otp_expires_at: otpExpires });
-            await sendEmail(email, "Your Login OTP", `Your OTP: ${otp}`);
-
-            res.json({ message: "OTP sent to email. Please verify to continue." });
-            return;
-        }
-
-        // Normal login flow (without 2FA)
-        const token = generateToken(user.id, user.role ?? "user");
-        const refreshToken = generateRefreshToken(user.id);
-
-        res.json({
-            message: "Login successful",
-            userId: user.id, // Include user ID in the response
-            token,
-            refreshToken,
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Login failed", error });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      res.status(401).json({ message: "Invalid email or password" });
+      return;
     }
+
+    if (!user.is_verified) {
+      res.status(403).json({ message: "Please verify your email" });
+      return;
+    }
+
+    // If 2FA is enabled, send OTP instead of logging in
+    if (user.is_2fa_enabled) {
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+      await user.update({ otp, otp_expires_at: otpExpires });
+      await sendEmail(email, "Your Login OTP", `Your OTP: ${otp}`);
+
+      res.json({ message: "OTP sent to email. Please verify to continue." });
+      return;
+    }
+
+    // Normal login flow (without 2FA)
+    const token = generateToken(user.id, user.role ?? "user");
+    const refreshToken = generateRefreshToken(user.id);
+
+    res.json({
+      message: "Login successful",
+      userId: user.id, // Include user ID in the response
+      token,
+      refreshToken,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Login failed", error });
+  }
 };
 
 export const verifyLoginOTP = async (req: Request, res: Response) => {

@@ -35,6 +35,7 @@ Message.init(
     received_at: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: sequelize.literal("NOW()"),
     },
   },
   {
