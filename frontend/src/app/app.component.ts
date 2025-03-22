@@ -1,23 +1,16 @@
 import { Component } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { SidebarComponent } from './sidebar/sidebar.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet, SidebarComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [RouterOutlet],
 })
 export class AppComponent {
-  title = 'frontend';
-  showSidebar: boolean = true; // Sidebar should be visible by default
-
-  constructor(private router: Router) {
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        // Hide sidebar on auth pages
-        this.showSidebar = !['/login', '/register'].includes(event.url);
-      }
-    });
-  }
+    /**
+     * Constructor
+     */
+    constructor() {}
 }

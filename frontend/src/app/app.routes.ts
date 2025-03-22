@@ -1,21 +1,51 @@
 import { Routes } from '@angular/router';
-import { SignUpComponent } from './sign-up/sign-up.component';
-import { LoginComponent } from './login/login.component';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { OtpVerificationComponent } from './otp-verification/otp-verification.component';
-import { ConfirmPasswordComponent } from './confirm-password/confirm-password.component'; // ✅ New Component
-import { ChatComponent } from './chat/chat.component';
-import { AuthGuard } from './auth.guard';
-import { HomeComponent } from './home/home.component';
+import { AuthGuard } from './core/auth.guard';
 
 export const appRoutes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'signup', component: SignUpComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'otp-verification', component: OtpVerificationComponent },
-  { path: 'confirm-password', component: ConfirmPasswordComponent }, // ✅ New Route
-  { path: 'chat', component: ChatComponent },
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
-  { path: '**', redirectTo: '/login' },
+    // Default redirect
+    { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
+
+    // Auth routes (public)
+    {
+        path: 'sign-up',
+        loadChildren: () => import('app/modules/auth/sign-up/sign-up.routes'),
+    },
+    {
+        path: 'verify-email',
+        loadChildren: () =>
+            import('app/modules/auth/verify-email/verify-email.routes'),
+    },
+    {
+        path: 'sign-in',
+        loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes'),
+    },
+    {
+        path: 'verify-otp',
+        loadChildren: () =>
+            import('app/modules/auth/verify-otp/verify-otp.routes'),
+    },
+    {
+        path: 'forgot-password',
+        loadChildren: () =>
+            import('app/modules/auth/forgot-password/forgot-password.routes'),
+    },
+    {
+        path: 'reset-password',
+        loadChildren: () =>
+            import('app/modules/auth/reset-password/reset-password.routes'),
+    },
+    {
+        path: 'sign-out',
+        loadChildren: () => import('app/modules/auth/sign-out/sign-out.routes'),
+    },
+
+    // Protected routes
+    {
+        path: 'finance',
+        loadChildren: () => import('app/modules/finance/finance.routes'),
+        canActivate: [AuthGuard],
+    },
+
+    // Fallback for unknown routes
+    { path: '**', redirectTo: '/sign-in' },
 ];
