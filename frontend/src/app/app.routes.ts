@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from 'app/core/auth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
-import { ClassyLayoutComponent } from './layout/layouts/vertical/classy/classy.component';
 
 export const appRoutes: Routes = [
     // Default redirect
@@ -55,10 +54,9 @@ export const appRoutes: Routes = [
         ],
     },
 
-    // Protected routes (with ClassyLayoutComponent)
     {
         path: '',
-        component: ClassyLayoutComponent,
+        component: LayoutComponent,
         canActivate: [AuthGuard],
         children: [
             {
