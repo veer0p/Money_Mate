@@ -1,71 +1,36 @@
-<!-- Button -->
-<button mat-icon-button [matMenuTriggerFor]="userActions">
-    <span class="relative">
-        @if (showAvatar && user.avatar) {
-            <img class="h-7 w-7 rounded-full" [src]="user.avatar" />
-        }
-        @if (!showAvatar || !user.avatar) {
-            <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        }
-        <span
-            class="absolute bottom-0 right-0 h-2 w-2 rounded-full"
-            [ngClass]="{
-                'mb-px mr-px': !showAvatar || !user.avatar,
-                'bg-green-500': user.status === 'online',
-                'bg-amber-500': user.status === 'away',
-                'bg-red-500': user.status === 'busy',
-                'bg-gray-400': user.status === 'not-visible',
-            }"
-        ></span>
-    </span>
-</button>
-
-<mat-menu [xPosition]="'before'" #userActions="matMenu">
-    <button mat-menu-item>
-        <span class="flex flex-col leading-none">
-            <span>Signed in as</span>
-            <span class="mt-1.5 text-md font-medium">{{ user.email }}</span>
-        </span>
-    </button>
-    <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item>
-        <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        <span>Profile</span>
-    </button>
-    <button mat-menu-item>
-        <mat-icon [svgIcon]="'heroicons_outline:cog-8-tooth'"></mat-icon>
-        <span>Settings</span>
-    </button>
-    <button mat-menu-item [matMenuTriggerFor]="userStatus">
-        <mat-icon
-            [svgIcon]="'heroicons_outline:ellipsis-horizontal-circle'"
-        ></mat-icon>
-        <span>Status</span>
-    </button>
-    <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item (click)="signOut()">
-        <mat-icon
-            [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"
-        ></mat-icon>
-        <span>Sign out</span>
-    </button>
-</mat-menu>
-
-<mat-menu class="user-status-menu" #userStatus="matMenu">
-    <button mat-menu-item (click)="updateUserStatus('online')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-green-500"></span>
-        <span>Online</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('away')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-amber-500"></span>
-        <span>Away</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('busy')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-red-500"></span>
-        <span>Busy</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('not-visible')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-gray-400"></span>
-        <span>Invisible</span>
-    </button>
-</mat-menu>
+<!-- app/layout/common/user/user.component.html -->
+<div class="relative flex items-center">
+    <!-- Avatar -->
+    <ng-container *ngIf="showAvatar && user?.avatar">
+        <img
+            class="h-10 w-10 rounded-full"
+            [src]="user.avatar"
+            alt="User avatar"
+        />
+    </ng-container>
+    <ng-container *ngIf="showAvatar && !user?.avatar">
+        <div
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600"
+        >
+            <span class="font-medium text-gray-600 dark:text-gray-300">
+                {{ user?.name?.charAt(0) || 'G' }}
+            </span>
+        </div>
+    </ng-container>
+    <!-- Status -->
+    <!-- <div
+        class="absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-white dark:border-gray-800"
+        [ngClass]="{
+            'bg-green-500': user?.status === 'online',
+            'bg-amber-500': user?.status === 'away',
+            'bg-red-500': user?.status === 'busy',
+            'bg-gray-400': user?.status === 'offline' || !user?.status
+        }"
+    ></div> -->
+    <!-- Name -->
+    <ng-container *ngIf="!showAvatar">
+        <div class="ml-3 font-medium leading-5">
+            {{ user?.name || 'Guest' }}
+        </div>
+    </ng-container>
+</div>

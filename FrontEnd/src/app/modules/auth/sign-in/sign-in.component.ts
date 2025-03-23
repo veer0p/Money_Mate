@@ -1,4 +1,3 @@
-// src/app/auth/sign-in/sign-in.component.ts
 import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
 import {
     FormBuilder,
@@ -84,7 +83,7 @@ export class AuthSignInComponent {
                         response.token,
                         response.refreshToken
                     );
-                    this.router.navigate(['/finance']); // Adjust the route as needed
+                    this.router.navigate(['/dashboard']);
                 } else if (response.message.includes('OTP')) {
                     // Handle 2FA case
                     this.alert = {
@@ -115,7 +114,6 @@ export class AuthSignInComponent {
         });
     }
 
-    // Optional: Reset form and alert
     resetForm(): void {
         this.signInNgForm.resetForm();
         this.signInForm.enable();

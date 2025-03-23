@@ -1,9 +1,8 @@
-import { Routes } from '@angular/router';
 import { AuthResetPasswordComponent } from 'app/modules/auth/reset-password/reset-password.component';
 
-export default [
+export const ResetPasswordRoutes = [
     {
         path: '',
         component: AuthResetPasswordComponent,
     },
-] as Routes;
+];
