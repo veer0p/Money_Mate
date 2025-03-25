@@ -1,0 +1,8 @@
+<ng-container *ngIf="layout === 'empty'">
+    <empty-layout></empty-layout>
+</ng-container>
+<ng-container *ngIf="layout === 'classy' && layoutComponents['classy']">
+    <ng-container
+        *ngComponentOutlet="layoutComponents['classy']"
+    ></ng-container>
+</ng-container>

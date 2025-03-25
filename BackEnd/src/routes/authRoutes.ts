@@ -15,10 +15,10 @@ const router = Router();
 router.post("/signup", signup);
 router.post("/verify-email", verifyEmail);
 router.post("/login", login);
-router.post("/verify-Login-OTP", verifyLoginOTP);
-router.post("/request-2FA", requestToggle2FA);
-router.post("/verify-2FA-OTP", verifyToggle2FA);
+router.post("/verify-login-otp", verifyLoginOTP);
+router.post("/request-toggle-2fa", requestToggle2FA);
+router.post("/verify-toggle-2fa", verifyToggle2FA);
 router.post("/request-password-reset", requestPasswordReset);
 router.post("/reset-password", resetPassword);
 
-export default router; // ✅ Make sure you're exporting the router
+export default router;

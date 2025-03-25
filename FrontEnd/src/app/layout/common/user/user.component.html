@@ -1,0 +1,36 @@
+<!-- app/layout/common/user/user.component.html -->
+<div class="relative flex items-center">
+    <!-- Avatar -->
+    <ng-container *ngIf="showAvatar && user?.avatar">
+        <img
+            class="h-10 w-10 rounded-full"
+            [src]="user.avatar"
+            alt="User avatar"
+        />
+    </ng-container>
+    <ng-container *ngIf="showAvatar && !user?.avatar">
+        <div
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600"
+        >
+            <span class="font-medium text-gray-600 dark:text-gray-300">
+                {{ user?.name?.charAt(0) || 'G' }}
+            </span>
+        </div>
+    </ng-container>
+    <!-- Status -->
+    <!-- <div
+        class="absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-white dark:border-gray-800"
+        [ngClass]="{
+            'bg-green-500': user?.status === 'online',
+            'bg-amber-500': user?.status === 'away',
+            'bg-red-500': user?.status === 'busy',
+            'bg-gray-400': user?.status === 'offline' || !user?.status
+        }"
+    ></div> -->
+    <!-- Name -->
+    <ng-container *ngIf="!showAvatar">
+        <div class="ml-3 font-medium leading-5">
+            {{ user?.name || 'Guest' }}
+        </div>
+    </ng-container>
+</div>
