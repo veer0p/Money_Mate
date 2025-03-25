@@ -29,8 +29,7 @@ class User extends Model {
   public facebook_id?: string;
   public apple_id?: string;
   public profile_image_url?: string;
-  public bio?: string;
-  public about_me?: string;
+  public account_balance!: number; // New field for account balance
 }
 
 // Define Sequelize Model
@@ -112,10 +111,10 @@ User.init(
       allowNull: true,
     },
     role: {
-      type: DataTypes.STRING, // Changed to STRING
+      type: DataTypes.STRING,
       defaultValue: "user",
       validate: {
-        isIn: [["user", "admin", "moderator"]], // Enforce allowed values
+        isIn: [["user", "admin", "moderator"]],
       },
     },
     is_2fa_enabled: {
@@ -150,13 +149,10 @@ User.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    bio: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    about_me: {
-      type: DataTypes.TEXT,
-      allowNull: true,
+    account_balance: {
+      type: DataTypes.DECIMAL(12, 2),
+      defaultValue: 0.0,
+      allowNull: false,
     },
   },
   {

@@ -1,2 +1,4 @@
 /BackEnd/node_modules
 BackEnd/.env
+/ml/expense_tracking/node_modules
+/ml/spending_pattern/node_modules
