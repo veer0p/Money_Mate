@@ -78,11 +78,13 @@ export class AuthSignInComponent {
             next: (response) => {
                 // Handle successful login
                 if (response.token && response.refreshToken) {
-                    // Save tokens and redirect
+                    // Save tokens and userId
                     this.authService.saveTokens(
                         response.token,
                         response.refreshToken
                     );
+                    // Store userId in localStorage
+                    localStorage.setItem('userId', response.userId);
                     this.router.navigate(['/dashboard']);
                 } else if (response.message.includes('OTP')) {
                     // Handle 2FA case

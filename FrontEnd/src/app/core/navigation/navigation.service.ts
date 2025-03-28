@@ -77,13 +77,13 @@ export class NavigationService {
                             link: '/insights',
                             icon: 'heroicons_outline:light-bulb',
                         },
-                        {
-                            id: 'mobile-sync',
-                            title: 'Mobile Sync',
-                            type: 'basic',
-                            link: '/mobile-sync',
-                            icon: 'heroicons_outline:device-phone-mobile',
-                        },
+                        // {
+                        //     id: 'mobile-sync',
+                        //     title: 'Mobile Sync',
+                        //     type: 'basic',
+                        //     link: '/mobile-sync',
+                        //     icon: 'heroicons_outline:device-phone-mobile',
+                        // },
                         {
                             id: 'profile',
                             title: 'Profile',

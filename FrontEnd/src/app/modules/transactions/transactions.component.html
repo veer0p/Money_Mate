@@ -5,6 +5,12 @@
     <div
         class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
     >
+        <!-- Loader -->
+        @if (isLoading) {
+            <div class="absolute inset-x-0 bottom-0">
+                <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+            </div>
+        }
         <!-- Title -->
         <div class="text-4xl font-extrabold tracking-tight">Transactions</div>
         <!-- Actions -->
@@ -23,13 +29,14 @@
                     matInput
                     [autocomplete]="'off'"
                     [placeholder]="'Search transactions'"
+                    [formControl]="searchControl"
                 />
             </mat-form-field>
             <!-- Add transaction button -->
-            <button class="ml-4" mat-flat-button [color]="'primary'">
+            <!-- <button class="ml-4" mat-flat-button [color]="'primary'">
                 <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                 <span class="ml-2 mr-1">Add</span>
-            </button>
+            </button> -->
         </div>
     </div>
 
@@ -39,7 +46,7 @@
         <div
             class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto"
         >
-            @if (transactions.length > 0) {
+            @if (displayedTransactions.length > 0) {
                 <div class="grid">
                     <!-- Header -->
                     <div
@@ -55,7 +62,7 @@
                     </div>
                     <!-- Rows -->
                     @for (
-                        transaction of transactions;
+                        transaction of displayedTransactions;
                         track trackByFn($index, transaction)
                     ) {
                         <div
@@ -126,15 +133,17 @@
                     }
                 </div>
 
-                <!-- Paginator (static for now) -->
+                <!-- Paginator -->
                 <mat-paginator
                     class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
-                    [length]="20"
-                    [pageIndex]="0"
-                    [pageSize]="10"
-                    [pageSizeOptions]="[5, 10, 25, 100]"
+                    [length]="totalTransactions"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [pageSizeOptions]="pageSizeOptions"
                     [showFirstLastButtons]="true"
-                ></mat-paginator>
+                    (page)="onPageChange($event)"
+                >
+                </mat-paginator>
             } @else {
                 <div
                     class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16"

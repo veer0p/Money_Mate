@@ -12,12 +12,13 @@ const startServer = async () => {
     await sequelize.authenticate(); // ✅ Ensure database connection is valid
     console.log("✅ Database connected successfully!");
 
-    await sequelize.sync({ alter: false }); // ✅ Sync models with database (use { force: true } to drop & recreate tables)
+    await sequelize.sync({ alter: true }); // ✅ Sync models with database (use { force: true } to drop & recreate tables)
     console.log("🔄 Database synchronized!");
 
     app.listen(PORT, "0.0.0.0", () => {
       // ✅ Bind to 0.0.0.0 for network accessibility
       console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+
       console.log(
         `📱 Accessible on your local network at http://${getIPAddress()}:${PORT}`
       );
@@ -30,16 +31,16 @@ const startServer = async () => {
 
 // Helper function to get the local IP address
 function getIPAddress(): string {
-  const os = require("os");
-  const interfaces = os.networkInterfaces();
-  for (const interfaceName in interfaces) {
-    const iface = interfaces[interfaceName];
-    for (const alias of iface) {
-      if (alias.family === "IPv4" && !alias.internal) {
-        return alias.address;
-      }
-    }
-  }
+  // const os = require("os");
+  // const interfaces = os.networkInterfaces();
+  // for (const interfaceName in interfaces) {
+  //   const iface = interfaces[interfaceName];
+  //   for (const alias of iface) {
+  //     if (alias.family === "IPv4" && !alias.internal) {
+  //       return alias.address;
+  //     }
+  //   }
+  // }
   return "0.0.0.0"; // Fallback to localhost if no IP is found
 }
 

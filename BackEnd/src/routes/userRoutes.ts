@@ -1,20 +1,25 @@
-import express from "express";
+import { Router } from "express";
 import {
-  getAllUsers,
   getUserDetails,
   updateUserDetails,
+  uploadProfileImage,
 } from "../controllers/userController";
-import authMiddleware from "../middleware/authMiddleware";
+import multer from "multer";
 
-const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Get user details
-router.get("/:id", getUserDetails);
+const router = Router();
 
-// Update user details
-router.put("/:id", updateUserDetails);
+// Route to get user details by userId
+router.get("/view/:userId", getUserDetails);
 
-// Get all active users (Requires authentication)
-router.get("/", authMiddleware, getAllUsers);
+// Route to update user details by userId
+router.put("/update/:userId", updateUserDetails);
+
+router.post(
+  "/user/:userId/upload-profile-image",
+  upload.single("profileImage"),
+  uploadProfileImage
+);
 
 export default router;

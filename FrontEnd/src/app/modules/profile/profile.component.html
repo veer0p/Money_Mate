@@ -1,1 +1,311 @@
-<p>profile works!</p>
+<div class="flex min-w-0 flex-auto flex-col">
+    <div class="flex-auto pt-4 sm:pt-6">
+        <div class="mx-auto w-full max-w-screen-xl">
+            @if (isLoading) {
+                <div class="flex justify-center py-8">
+                    <mat-progress-spinner
+                        mode="indeterminate"
+                        diameter="40"
+                    ></mat-progress-spinner>
+                </div>
+            } @else {
+                @if (user) {
+                    <!-- Profile Header -->
+                    <div
+                        class="bg-card flex flex-col items-center rounded-2xl p-6 shadow md:flex-row"
+                    >
+                        <!-- Profile Picture (Left) -->
+                        <div class="relative">
+                            <img
+                                [src]="
+                                    user.profile_image_url ||
+                                    'assets/images/default-profile.png'
+                                "
+                                alt="Profile Image"
+                                class="h-32 w-32 rounded-full object-cover"
+                            />
+                            @if (isEditing) {
+                                <label
+                                    for="profile-image-upload"
+                                    class="absolute bottom-0 right-0 cursor-pointer rounded-full bg-blue-500 p-2"
+                                >
+                                    <mat-icon
+                                        class="text-white"
+                                        [svgIcon]="'heroicons_outline:camera'"
+                                    ></mat-icon>
+                                    <input
+                                        id="profile-image-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        (change)="onProfileImageChange($event)"
+                                        class="hidden"
+                                    />
+                                </label>
+                            }
+                        </div>
+
+                        <!-- User Info & QR Code Container -->
+                        <div
+                            class="ml-6 flex w-full flex-col md:flex-row md:items-start md:justify-between"
+                        >
+                            <!-- User Info (Left) -->
+                            <div
+                                class="flex flex-col items-center md:items-start"
+                            >
+                                <h1
+                                    class="text-center text-3xl font-bold md:text-left"
+                                >
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </h1>
+                                <p
+                                    class="text-secondary text-center md:text-left"
+                                >
+                                    {{ user.email }}
+                                </p>
+                                <p
+                                    class="text-secondary text-center md:text-left"
+                                >
+                                    Role: {{ user.role | titlecase }}
+                                </p>
+                                <p
+                                    class="text-secondary text-center md:text-left"
+                                >
+                                    Account Balance:
+                                    {{
+                                        user.account_balance
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
+                                </p>
+                            </div>
+
+                            <!-- QR Code (Right) -->
+                            <div
+                                class="mt-4 flex flex-col items-center md:ml-4 md:mt-0"
+                            >
+                                @if (qrCodeUrl) {
+                                    <img
+                                        [src]="qrCodeUrl"
+                                        alt="QR Code"
+                                        class="h-24 w-24"
+                                    />
+                                    <p
+                                        class="text-secondary text-center text-sm"
+                                    >
+                                        Scan to link with the app
+                                    </p>
+                                } @else {
+                                    <p class="text-secondary text-sm">
+                                        Generating QR code...
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Details -->
+                    <div
+                        class="mt-6 grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2"
+                    >
+                        <!-- Personal Information -->
+                        <mat-card class="p-6">
+                            <mat-card-header>
+                                <mat-card-title
+                                    >Personal Information</mat-card-title
+                                >
+                            </mat-card-header>
+                            <mat-card-content>
+                                @if (isEditing) {
+                                    <form class="space-y-4">
+                                        <mat-form-field class="w-full">
+                                            <mat-label>First Name</mat-label>
+                                            <input
+                                                matInput
+                                                [(ngModel)]="
+                                                    editedUser.first_name
+                                                "
+                                                name="first_name"
+                                                required
+                                            />
+                                        </mat-form-field>
+                                        <mat-form-field class="w-full">
+                                            <mat-label>Last Name</mat-label>
+                                            <input
+                                                matInput
+                                                [(ngModel)]="
+                                                    editedUser.last_name
+                                                "
+                                                name="last_name"
+                                                required
+                                            />
+                                        </mat-form-field>
+                                        <mat-form-field class="w-full">
+                                            <mat-label>Phone Number</mat-label>
+                                            <input
+                                                matInput
+                                                [(ngModel)]="
+                                                    editedUser.phone_number
+                                                "
+                                                name="phone_number"
+                                            />
+                                        </mat-form-field>
+                                    </form>
+                                } @else {
+                                    <div class="space-y-4">
+                                        <div>
+                                            <p class="text-secondary">
+                                                First Name
+                                            </p>
+                                            <p class="text-lg font-medium">
+                                                {{ user.first_name }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-secondary">
+                                                Last Name
+                                            </p>
+                                            <p class="text-lg font-medium">
+                                                {{ user.last_name }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-secondary">
+                                                Date of Birth
+                                            </p>
+                                            <p class="text-lg font-medium">
+                                                {{
+                                                    user.dob
+                                                        ? (user.dob
+                                                          | date: 'mediumDate')
+                                                        : 'Not provided'
+                                                }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-secondary">
+                                                Phone Number
+                                            </p>
+                                            <p class="text-lg font-medium">
+                                                {{
+                                                    user.phone_number ||
+                                                        'Not provided'
+                                                }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                }
+                            </mat-card-content>
+                            <mat-card-actions class="justify-end">
+                                @if (isEditing) {
+                                    <button
+                                        mat-raised-button
+                                        color="primary"
+                                        (click)="saveChanges()"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        mat-button
+                                        (click)="toggleEdit()"
+                                        class="ml-2"
+                                    >
+                                        Cancel
+                                    </button>
+                                } @else {
+                                    <button
+                                        mat-raised-button
+                                        color="primary"
+                                        (click)="toggleEdit()"
+                                    >
+                                        Edit
+                                    </button>
+                                }
+                            </mat-card-actions>
+                        </mat-card>
+
+                        <!-- Account Information -->
+                        <mat-card class="p-6">
+                            <mat-card-header>
+                                <mat-card-title
+                                    >Account Information</mat-card-title
+                                >
+                            </mat-card-header>
+                            <mat-card-content>
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-secondary">Email</p>
+                                        <p class="text-lg font-medium">
+                                            {{ user.email }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-secondary">
+                                            Email Verified
+                                        </p>
+                                        <p class="text-lg font-medium">
+                                            {{
+                                                user.is_email_verified
+                                                    ? 'Yes'
+                                                    : 'No'
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-secondary">
+                                            Account Status
+                                        </p>
+                                        <p class="text-lg font-medium">
+                                            {{
+                                                user.is_active
+                                                    ? 'Active'
+                                                    : 'Inactive'
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-secondary">
+                                            2FA Enabled
+                                        </p>
+                                        <p class="text-lg font-medium">
+                                            {{
+                                                user.is_2fa_enabled
+                                                    ? 'Yes'
+                                                    : 'No'
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-secondary">Joined On</p>
+                                        <p class="text-lg font-medium">
+                                            {{
+                                                user.created_at
+                                                    | date: 'mediumDate'
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-secondary">Last Login</p>
+                                        <p class="text-lg font-medium">
+                                            {{
+                                                user.last_login
+                                                    ? (user.last_login
+                                                      | date: 'medium')
+                                                    : 'Never'
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                } @else {
+                    <div class="text-secondary text-center">
+                        Unable to load user details.
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

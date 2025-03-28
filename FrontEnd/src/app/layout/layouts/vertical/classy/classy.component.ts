@@ -8,6 +8,8 @@ import {
     FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { AuthService } from 'app/Service/auth.service'; // Import AuthService
+import { UserService } from 'app/Service/user.service'; // Import UserService
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { User } from 'app/core/user/user.types';
@@ -39,7 +41,9 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _navigationService: NavigationService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
+        private _fuseNavigationService: FuseNavigationService,
+        private _userService: UserService, // Inject UserService
+        private _authService: AuthService // Inject AuthService
     ) {}
 
     get currentYear(): number {
@@ -56,13 +60,41 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
                 this.navigation = navigation;
             });
 
-        this.user = {
-            id: '1',
-            name: 'Brian Hughes',
-            email: 'hughes.brian@company.com',
-            avatar: 'https://i.etsystatic.com/50406753/r/il/314979/5977768751/il_794xN.5977768751_l6ya.jpg',
-            status: 'offline',
-        };
+        // Fetch user details dynamically
+        const userId = this._authService.getUserId();
+        if (userId) {
+            this._userService
+                .getUserDetails(userId)
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe({
+                    next: (response) => {
+                        const userData = response.data;
+                        this.user = {
+                            id: userData.id,
+                            name: `${userData.first_name} ${userData.last_name}`,
+                            email: userData.email,
+                            avatar:
+                                userData.profile_image_url ||
+                                'assets/images/default-profile.png',
+                            status: userData.is_active ? 'online' : 'offline',
+                        };
+                    },
+                    error: (error) => {
+                        console.error('Error fetching user details:', error);
+                        // Fallback to default user data if the API fails
+                        this.user = {
+                            id: '1',
+                            name: 'Unknown User',
+                            email: 'unknown@company.com',
+                            avatar: 'assets/images/default-profile.png',
+                            status: 'offline',
+                        };
+                    },
+                });
+        } else {
+            console.error('User ID not found. Please log in.');
+            this._router.navigate(['/sign-in']);
+        }
 
         this._fuseMediaWatcherService.onMediaChange$
             .pipe(takeUntil(this._unsubscribeAll))

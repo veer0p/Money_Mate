@@ -1,0 +1,9 @@
+// src/app/dashboard/dashboard.component.scss
+:host {
+    display: block;
+}
+
+// Ensure the cards have a minimum height for consistency
+.bg-card {
+    min-height: 200px;
+}
