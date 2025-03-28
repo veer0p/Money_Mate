@@ -1,234 +1,163 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms'; // Import for form control
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
+import { AuthService } from 'app/Service/auth.service';
+import { TransactionService } from 'app/Service/transaction.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // For debouncing search
 
 @Component({
     selector: 'app-transactions',
+    templateUrl: './transactions.component.html',
+    styleUrls: ['./transactions.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
         MatFormFieldModule,
         MatInputModule,
-        MatIconModule,
         MatButtonModule,
+        MatIconModule,
+        MatPaginatorModule,
+        MatProgressBarModule,
+        ReactiveFormsModule,
     ],
-    templateUrl: './transactions.component.html',
-    styleUrl: './transactions.component.scss',
 })
-export class TransactionsComponent {
-    transactions = [
-        {
-            id: '550e8400-e29b-41d4-a716-446655440000',
-            reference_id: 'TXN001',
-            account_number: 'ACC123456789',
-            transaction_type: 'credit',
-            category: 'Salary',
-            amount: 50000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-01',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440001',
-            reference_id: 'TXN002',
-            account_number: 'ACC123456789',
-            transaction_type: 'debit',
-            category: 'Groceries',
-            amount: 2500.5,
-            currency: 'INR',
-            transaction_date: '2025-03-02',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440002',
-            reference_id: 'TXN003',
-            account_number: 'ACC987654321',
-            transaction_type: 'debit',
-            category: 'Utilities',
-            amount: 1200.75,
-            currency: 'INR',
-            transaction_date: '2025-03-03',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440003',
-            reference_id: 'TXN004',
-            account_number: 'ACC987654321',
-            transaction_type: 'credit',
-            category: 'Freelance',
-            amount: 15000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-04',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440004',
-            reference_id: 'TXN005',
-            account_number: 'ACC456789123',
-            transaction_type: 'debit',
-            category: 'Dining',
-            amount: 800.25,
-            currency: 'INR',
-            transaction_date: '2025-03-05',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440005',
-            reference_id: 'TXN006',
-            account_number: 'ACC456789123',
-            transaction_type: 'credit',
-            category: 'Refund',
-            amount: 500.0,
-            currency: 'INR',
-            transaction_date: '2025-03-06',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440006',
-            reference_id: 'TXN007',
-            account_number: 'ACC789123456',
-            transaction_type: 'debit',
-            category: 'Travel',
-            amount: 3500.0,
-            currency: 'INR',
-            transaction_date: '2025-03-07',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440007',
-            reference_id: 'TXN008',
-            account_number: 'ACC789123456',
-            transaction_type: 'credit',
-            category: 'Bonus',
-            amount: 10000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-08',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440008',
-            reference_id: 'TXN009',
-            account_number: 'ACC321654987',
-            transaction_type: 'debit',
-            category: 'Shopping',
-            amount: 4500.0,
-            currency: 'INR',
-            transaction_date: '2025-03-09',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440009',
-            reference_id: 'TXN010',
-            account_number: 'ACC321654987',
-            transaction_type: 'credit',
-            category: 'Gift',
-            amount: 2000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-10',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440010',
-            reference_id: 'TXN011',
-            account_number: 'ACC654987321',
-            transaction_type: 'debit',
-            category: 'Entertainment',
-            amount: 600.5,
-            currency: 'INR',
-            transaction_date: '2025-03-11',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440011',
-            reference_id: 'TXN012',
-            account_number: 'ACC654987321',
-            transaction_type: 'credit',
-            category: 'Interest',
-            amount: 300.0,
-            currency: 'INR',
-            transaction_date: '2025-03-12',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440012',
-            reference_id: 'TXN013',
-            account_number: 'ACC147258369',
-            transaction_type: 'debit',
-            category: 'Medical',
-            amount: 1800.0,
-            currency: 'INR',
-            transaction_date: '2025-03-13',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440013',
-            reference_id: 'TXN014',
-            account_number: 'ACC147258369',
-            transaction_type: 'credit',
-            category: 'Insurance',
-            amount: 5000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-14',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440014',
-            reference_id: 'TXN015',
-            account_number: 'ACC258369147',
-            transaction_type: 'debit',
-            category: 'Education',
-            amount: 2500.0,
-            currency: 'INR',
-            transaction_date: '2025-03-15',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440015',
-            reference_id: 'TXN016',
-            account_number: 'ACC258369147',
-            transaction_type: 'credit',
-            category: 'Salary',
-            amount: 52000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-16',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440016',
-            reference_id: 'TXN017',
-            account_number: 'ACC369147258',
-            transaction_type: 'debit',
-            category: 'Rent',
-            amount: 15000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-17',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440017',
-            reference_id: 'TXN018',
-            account_number: 'ACC369147258',
-            transaction_type: 'credit',
-            category: 'Investment',
-            amount: 8000.0,
-            currency: 'INR',
-            transaction_date: '2025-03-18',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440018',
-            reference_id: 'TXN019',
-            account_number: 'ACC741852963',
-            transaction_type: 'debit',
-            category: 'Transport',
-            amount: 900.0,
-            currency: 'INR',
-            transaction_date: '2025-03-19',
-        },
-        {
-            id: '550e8400-e29b-41d4-a716-446655440019',
-            reference_id: 'TXN020',
-            account_number: 'ACC741852963',
-            transaction_type: 'credit',
-            category: 'Cashback',
-            amount: 200.0,
-            currency: 'INR',
-            transaction_date: '2025-03-20',
-        },
-    ];
-
+export class TransactionsComponent implements OnInit {
+    allTransactions: any[] = [];
+    filteredTransactions: any[] = []; // Store filtered transactions for search
+    displayedTransactions: any[] = [];
     selectedTransaction: any = null;
+    userId: string | null = null;
+    isLoading: boolean = false;
 
-    toggleDetails(transactionId: string) {
+    // Paginator properties
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    pageSizeOptions: number[] = [5, 10, 25, 100];
+    pageSize: number = 10;
+    pageIndex: number = 0;
+    totalTransactions: number = 0;
+
+    // Search control
+    searchControl = new FormControl('');
+
+    constructor(
+        private transactionService: TransactionService,
+        private authService: AuthService,
+        private router: Router
+    ) {}
+
+    ngOnInit(): void {
+        // Get the userId from localStorage
+        this.userId = this.authService.getUserId();
+        if (this.userId) {
+            this.fetchTransactions();
+        } else {
+            console.error('User ID not found in localStorage. Please log in.');
+            this.router.navigate(['/sign-in']);
+        }
+
+        // Set up search functionality with debounce
+        this.searchControl.valueChanges
+            .pipe(
+                debounceTime(300), // Wait 300ms after typing stops
+                distinctUntilChanged() // Only emit if the value has changed
+            )
+            .subscribe((searchTerm) => {
+                this.filterTransactions(searchTerm || '');
+            });
+    }
+
+    fetchTransactions(): void {
+        if (!this.userId) return;
+
+        this.isLoading = true;
+        this.transactionService.getTransactionsByUserId(this.userId).subscribe({
+            next: (response) => {
+                // Parse the amount field from string to number
+                this.allTransactions = (response.data || []).map(
+                    (transaction) => ({
+                        ...transaction,
+                        amount: transaction.amount
+                            ? parseFloat(transaction.amount)
+                            : 0,
+                    })
+                );
+                this.filteredTransactions = [...this.allTransactions]; // Initialize filtered transactions
+                this.totalTransactions = this.filteredTransactions.length;
+                this.updateDisplayedTransactions();
+                this.isLoading = false;
+            },
+            error: (error) => {
+                console.error('Error fetching transactions:', error);
+                this.allTransactions = [];
+                this.filteredTransactions = [];
+                this.displayedTransactions = [];
+                this.totalTransactions = 0;
+                this.isLoading = false;
+            },
+        });
+    }
+
+    filterTransactions(searchTerm: string): void {
+        if (!searchTerm) {
+            this.filteredTransactions = [...this.allTransactions];
+        } else {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            this.filteredTransactions = this.allTransactions.filter(
+                (transaction) =>
+                    transaction.reference_id
+                        .toLowerCase()
+                        .includes(lowerCaseSearchTerm) ||
+                    transaction.account_number
+                        .toLowerCase()
+                        .includes(lowerCaseSearchTerm) ||
+                    transaction.transaction_type
+                        .toLowerCase()
+                        .includes(lowerCaseSearchTerm) ||
+                    transaction.category
+                        .toLowerCase()
+                        .includes(lowerCaseSearchTerm) ||
+                    transaction.description
+                        .toLowerCase()
+                        .includes(lowerCaseSearchTerm)
+            );
+        }
+        this.totalTransactions = this.filteredTransactions.length;
+        this.pageIndex = 0; // Reset to first page on search
+        if (this.paginator) {
+            this.paginator.pageIndex = 0;
+        }
+        this.updateDisplayedTransactions();
+    }
+
+    updateDisplayedTransactions(): void {
+        const startIndex = this.pageIndex * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        this.displayedTransactions = this.filteredTransactions.slice(
+            startIndex,
+            endIndex
+        );
+    }
+
+    onPageChange(event: any): void {
+        this.pageIndex = event.pageIndex;
+        this.pageSize = event.pageSize;
+        this.updateDisplayedTransactions();
+    }
+
+    toggleDetails(transactionId: string): void {
         this.selectedTransaction =
             this.selectedTransaction?.id === transactionId
                 ? null
-                : this.transactions.find((t) => t.id === transactionId);
+                : this.displayedTransactions.find(
+                      (t) => t.id === transactionId
+                  );
     }
 
     trackByFn(index: number, item: any): string {

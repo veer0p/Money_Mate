@@ -1,641 +1,533 @@
-<div class="flex w-full flex-auto flex-col">
-    <div class="mx-auto flex w-full max-w-screen-xl flex-wrap p-6 md:p-8">
-        <!-- Title and action buttons -->
-        <div class="flex w-full items-center justify-between">
-            <div>
-                <h2 class="text-3xl font-semibold leading-8 tracking-tight">
-                    Finance dashboard
-                </h2>
-                <div class="text-secondary font-medium tracking-tight">
-                    Keep track of your financial status
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Main -->
+    <div class="flex-auto pt-4 sm:pt-6">
+        <div class="mx-auto w-full max-w-screen-xl">
+            <!-- Loader -->
+            @if (isLoading) {
+                <div class="flex justify-center py-8">
+                    <mat-progress-spinner
+                        mode="indeterminate"
+                        diameter="40"
+                    ></mat-progress-spinner>
                 </div>
-            </div>
-            <div class="ml-6 flex items-center">
-                <button class="hidden sm:inline-flex" mat-stroked-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        svgIcon="heroicons_solid:document-chart-bar"
-                    ></mat-icon>
-                    <span class="ml-2">Reports</span>
-                </button>
-                <button class="ml-3 hidden sm:inline-flex" mat-stroked-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        svgIcon="heroicons_solid:cog-8-tooth"
-                    ></mat-icon>
-                    <span class="ml-2">Settings</span>
-                </button>
-                <button
-                    class="ml-3 hidden sm:inline-flex"
-                    mat-flat-button
-                    color="primary"
-                >
-                    <mat-icon
-                        class="icon-size-5"
-                        svgIcon="heroicons_solid:arrow-up-tray"
-                    ></mat-icon>
-                    <span class="ml-2">Export</span>
-                </button>
-
-                <!-- Actions menu (visible on xs) -->
-                <div class="sm:hidden">
-                    <button mat-icon-button>
-                        <mat-icon
-                            svgIcon="heroicons_mini:ellipsis-vertical"
-                        ></mat-icon>
-                    </button>
-                    <div>
-                        <button>Export</button>
-                        <button>Reports</button>
-                        <button>Settings</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-8 grid w-full grid-cols-1 gap-8 xl:grid-cols-2">
-            <div class="grid gap-8 sm:grid-flow-col xl:grid-flow-row">
-                <!-- Previous statement -->
+            } @else {
+                <!-- Transaction Trend (Area Chart) -->
                 <div
-                    class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+                    class="bg-card dark flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-2 lg:col-span-3"
                 >
-                    <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
-                        <mat-icon
-                            class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
-                            svgIcon="heroicons_outline:check-circle"
-                        ></mat-icon>
-                    </div>
-                    <div class="flex items-center">
+                    <div
+                        class="ml-10 mr-6 mt-10 flex items-center justify-between sm:mr-10"
+                    >
                         <div class="flex flex-col">
                             <div
-                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                                class="mr-4 text-2xl font-semibold leading-7 tracking-tight md:text-3xl"
                             >
-                                Previous Statement
-                            </div>
-                            <div class="text-sm font-medium text-green-600">
-                                Paid on Feb 28, 2025
-                            </div>
-                        </div>
-                        <div class="-mt-2 ml-auto">
-                            <button mat-icon-button>
-                                <mat-icon
-                                    class="icon-size-5"
-                                    svgIcon="heroicons_mini:ellipsis-vertical"
-                                ></mat-icon>
-                            </button>
-                            <div>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:credit-card"
-                                        ></mat-icon>
-                                        <span>View statement</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:banknotes"
-                                        ></mat-icon>
-                                        <span>Spending breakdown</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:receipt-percent"
-                                        ></mat-icon>
-                                        <span>Tax breakdown</span>
-                                    </span>
-                                </button>
-                                <div class="my-2"></div>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:printer"
-                                        ></mat-icon>
-                                        <span>Print statement</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:envelope"
-                                        ></mat-icon>
-                                        <span>Email statement</span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="-mx-6 mt-4 flex flex-row flex-wrap">
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Card Limit
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $10,000.00
-                            </div>
-                        </div>
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Spent
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $7,500.00
-                            </div>
-                        </div>
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Minimum
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $300.00
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Current statement -->
-                <div
-                    class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
-                >
-                    <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
-                        <mat-icon
-                            class="text-red-500 opacity-25 icon-size-24 dark:text-red-400"
-                            svgIcon="heroicons_outline:exclamation-circle"
-                        ></mat-icon>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex flex-col">
-                            <div
-                                class="truncate text-lg font-medium leading-6 tracking-tight"
-                            >
-                                Current Statement
-                            </div>
-                            <div class="text-sm font-medium text-red-600">
-                                Must be paid before Mar 31, 2025
-                            </div>
-                        </div>
-                        <div class="-mt-2 ml-auto">
-                            <button mat-icon-button>
-                                <mat-icon
-                                    class="icon-size-5"
-                                    svgIcon="heroicons_mini:ellipsis-vertical"
-                                ></mat-icon>
-                            </button>
-                            <div>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:credit-card"
-                                        ></mat-icon>
-                                        <span>View statement</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:banknotes"
-                                        ></mat-icon>
-                                        <span>Spending breakdown</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:receipt-percent"
-                                        ></mat-icon>
-                                        <span>Tax breakdown</span>
-                                    </span>
-                                </button>
-                                <div class="my-2"></div>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:printer"
-                                        ></mat-icon>
-                                        <span>Print statement</span>
-                                    </span>
-                                </button>
-                                <button>
-                                    <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            svgIcon="heroicons_solid:envelope"
-                                        ></mat-icon>
-                                        <span>Email statement</span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="-mx-6 mt-4 flex flex-row flex-wrap">
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Card Limit
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $10,000.00
-                            </div>
-                        </div>
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Spent
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $2,500.00
-                            </div>
-                        </div>
-                        <div class="mx-6 my-3 flex flex-col">
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Minimum
-                            </div>
-                            <div class="mt-2 text-3xl font-medium leading-none">
-                                $250.00
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Account balance -->
-            <div
-                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow"
-            >
-                <div class="flex flex-col p-6 pb-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <div
-                                class="mr-4 truncate text-lg font-medium leading-6 tracking-tight"
-                            >
-                                Account Balance
+                                Transaction Trend
                             </div>
                             <div class="text-secondary font-medium">
-                                Monthly balance growth and avg. monthly income
+                                Total transaction amount over time
                             </div>
                         </div>
                         <div class="ml-2">
-                            <button
-                                class="bg-hover h-6 min-h-6 rounded-full px-2"
-                                mat-button
+                            <mat-button-toggle-group
+                                class="hidden space-x-1 border-none sm:inline-flex"
+                                value="this-year"
+                                #trendYearSelector="matButtonToggleGroup"
                             >
-                                <span class="text-secondary text-sm font-medium"
-                                    >12 months</span
+                                <mat-button-toggle
+                                    class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                    value="last-year"
                                 >
-                            </button>
-                            <div>
-                                <button>3 months</button>
-                                <button>6 months</button>
-                                <button>9 months</button>
-                                <button>12 months</button>
+                                    Last Year
+                                </mat-button-toggle>
+                                <mat-button-toggle
+                                    class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                    value="this-year"
+                                >
+                                    This Year
+                                </mat-button-toggle>
+                            </mat-button-toggle-group>
+                            <div class="sm:hidden">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="trendMenu"
+                                >
+                                    <mat-icon
+                                        [svgIcon]="
+                                            'heroicons_outline:ellipsis-vertical'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <mat-menu #trendMenu="matMenu">
+                                    <button mat-menu-item>This Year</button>
+                                    <button mat-menu-item>Last Year</button>
+                                </mat-menu>
                             </div>
                         </div>
                     </div>
-                    <div class="mr-2 mt-6 flex items-start">
-                        <div class="flex flex-col">
-                            <div
-                                class="text-3xl font-semibold tracking-tighter md:text-5xl"
-                            >
-                                3.5%
-                            </div>
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Average Monthly Growth
-                            </div>
-                        </div>
-                        <div class="ml-8 flex flex-col md:ml-16">
-                            <div
-                                class="text-3xl font-semibold tracking-tighter md:text-5xl"
-                            >
-                                $4,500.00
-                            </div>
-                            <div
-                                class="text-secondary text-sm font-medium leading-none"
-                            >
-                                Average Monthly Income
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-auto flex-col">
-                    <div class="h-full w-full flex-auto">
-                        <!-- Static placeholder for chart -->
-                        <img
-                            src="https://via.placeholder.com/300x200?text=Account+Balance+Chart"
-                            alt="Account Balance Chart"
-                        />
+                    <div class="flex h-80 flex-auto flex-col">
+                        <apx-chart
+                            class="h-full w-full flex-auto"
+                            [chart]="chartTransactionTrend.chart"
+                            [colors]="chartTransactionTrend.colors"
+                            [dataLabels]="chartTransactionTrend.dataLabels"
+                            [fill]="chartTransactionTrend.fill"
+                            [grid]="chartTransactionTrend.grid"
+                            [series]="chartTransactionTrend.series"
+                            [stroke]="chartTransactionTrend.stroke"
+                            [tooltip]="chartTransactionTrend.tooltip"
+                            [xaxis]="chartTransactionTrend.xaxis"
+                            [yaxis]="chartTransactionTrend.yaxis"
+                        ></apx-chart>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="mt-8 grid w-full grid-cols-1 gap-8 xl:grid-cols-3">
-            <!-- Recent transactions table -->
-            <div
-                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow xl:col-span-2"
-            >
-                <div class="p-6">
+                <!-- Summary Cards -->
+                <div
+                    class="mt-6 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4"
+                >
+                    <!-- Total Transactions -->
                     <div
-                        class="mr-4 truncate text-lg font-medium leading-6 tracking-tight"
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
                     >
-                        Recent transactions
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Total Transactions
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="totalTransactionsMenu"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_mini:ellipsis-vertical'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <mat-menu #totalTransactionsMenu="matMenu">
+                                    <button mat-menu-item>Today</button>
+                                    <button mat-menu-item>This Week</button>
+                                    <button mat-menu-item>This Month</button>
+                                </mat-menu>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex flex-col items-center">
+                            <div
+                                class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl"
+                            >
+                                {{ summary.totalTransactions }}
+                            </div>
+                            <div
+                                class="text-lg font-medium text-blue-600 dark:text-blue-500"
+                            >
+                                Transactions
+                            </div>
+                            <div
+                                class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                            >
+                                <div class="truncate text-md font-medium">
+                                    All Time
+                                </div>
+                                <div class="ml-1.5 text-lg font-semibold">
+                                    {{ summary.totalTransactions }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-secondary font-medium">
-                        1 pending, 4 completed
-                    </div>
-                </div>
-                <div class="mx-6 overflow-x-auto">
-                    <table class="w-full bg-transparent">
-                        <thead>
-                            <tr>
-                                <th>Transaction ID</th>
-                                <th>Date</th>
-                                <th>Name</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="order-row h-16">
-                                <td>
-                                    <span
-                                        class="text-secondary whitespace-nowrap pr-6 text-sm font-medium"
-                                        >TRX12345</span
-                                    >
-                                </td>
-                                <td>
-                                    <span class="whitespace-nowrap pr-6"
-                                        >Mar 20, 2025</span
-                                    >
-                                </td>
-                                <td>
-                                    <span class="whitespace-nowrap pr-6"
-                                        >Grocery Store</span
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="whitespace-nowrap pr-6 font-medium"
-                                        >$150.00</span
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="inline-flex items-center rounded-full bg-green-200 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-green-800 dark:bg-green-600 dark:text-green-50"
-                                    >
-                                        <span
-                                            class="whitespace-nowrap leading-relaxed"
-                                            >completed</span
-                                        >
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr class="order-row h-16">
-                                <td>
-                                    <span
-                                        class="text-secondary whitespace-nowrap pr-6 text-sm font-medium"
-                                        >TRX12346</span
-                                    >
-                                </td>
-                                <td>
-                                    <span class="whitespace-nowrap pr-6"
-                                        >Mar 21, 2025</span
-                                    >
-                                </td>
-                                <td>
-                                    <span class="whitespace-nowrap pr-6"
-                                        >Utility Bill</span
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="whitespace-nowrap pr-6 font-medium"
-                                        >$75.00</span
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="inline-flex items-center rounded-full bg-red-200 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-red-800 dark:bg-red-600 dark:text-red-50"
-                                    >
-                                        <span
-                                            class="whitespace-nowrap leading-relaxed"
-                                            >pending</span
-                                        >
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr class="h-16 border-0">
-                                <td class="border-0 px-0 py-6" colspan="6">
-                                    <button mat-stroked-button>
-                                        See all transactions
-                                    </button>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
 
-            <!-- Budget -->
-            <div class="bg-card flex flex-auto flex-col rounded-2xl p-6 shadow">
-                <div class="flex items-center">
-                    <div class="flex flex-col">
+                    <!-- Total Amount Spent -->
+                    <div
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Total Spent
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="totalSpentMenu"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_mini:ellipsis-vertical'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <mat-menu #totalSpentMenu="matMenu">
+                                    <button mat-menu-item>Today</button>
+                                    <button mat-menu-item>This Week</button>
+                                    <button mat-menu-item>This Month</button>
+                                </mat-menu>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex flex-col items-center">
+                            <div
+                                class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                            >
+                                {{
+                                    summary.totalAmountSpent
+                                        | currency: 'INR' : 'symbol' : '1.0-0'
+                                }}
+                            </div>
+                            <div
+                                class="text-lg font-medium text-red-600 dark:text-red-500"
+                            >
+                                Debit
+                            </div>
+                            <div
+                                class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                            >
+                                <div class="truncate text-md font-medium">
+                                    All Time
+                                </div>
+                                <div class="ml-1.5 text-lg font-semibold">
+                                    {{
+                                        summary.totalAmountSpent
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Amount Received -->
+                    <div
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Total Received
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="totalReceivedMenu"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_mini:ellipsis-vertical'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <mat-menu #totalReceivedMenu="matMenu">
+                                    <button mat-menu-item>Today</button>
+                                    <button mat-menu-item>This Week</button>
+                                    <button mat-menu-item>This Month</button>
+                                </mat-menu>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex flex-col items-center">
+                            <div
+                                class="text-7xl font-bold leading-none tracking-tight text-green-500 sm:text-8xl"
+                            >
+                                {{
+                                    summary.totalAmountReceived
+                                        | currency: 'INR' : 'symbol' : '1.0-0'
+                                }}
+                            </div>
+                            <div
+                                class="text-lg font-medium text-green-600 dark:text-green-500"
+                            >
+                                Credit
+                            </div>
+                            <div
+                                class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                            >
+                                <div class="truncate text-md font-medium">
+                                    All Time
+                                </div>
+                                <div class="ml-1.5 text-lg font-semibold">
+                                    {{
+                                        summary.totalAmountReceived
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Average Transaction Amount -->
+                    <div
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Average Transaction
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="averageTransactionMenu"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_mini:ellipsis-vertical'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <mat-menu #averageTransactionMenu="matMenu">
+                                    <button mat-menu-item>Today</button>
+                                    <button mat-menu-item>This Week</button>
+                                    <button mat-menu-item>This Month</button>
+                                </mat-menu>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex flex-col items-center">
+                            <div
+                                class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl"
+                            >
+                                {{
+                                    summary.averageTransactionAmount
+                                        | currency: 'INR' : 'symbol' : '1.0-0'
+                                }}
+                            </div>
+                            <div
+                                class="text-lg font-medium text-amber-600 dark:text-amber-500"
+                            >
+                                Amount
+                            </div>
+                            <div
+                                class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                            >
+                                <div class="truncate text-md font-medium">
+                                    All Time
+                                </div>
+                                <div class="ml-1.5 text-lg font-semibold">
+                                    {{
+                                        summary.averageTransactionAmount
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Distribution and Recent Transactions -->
+                <div
+                    class="mt-6 grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2"
+                >
+                    <!-- Transaction Distribution (Left) -->
+                    <!-- <div
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Transaction Distribution
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <mat-button-toggle-group
+                                    class="hidden space-x-1 border-none sm:inline-flex"
+                                    value="this-week"
+                                    #distributionWeekSelector="matButtonToggleGroup"
+                                >
+                                    <mat-button-toggle
+                                        class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                        value="last-week"
+                                    >
+                                        Last Week
+                                    </mat-button-toggle>
+                                    <mat-button-toggle
+                                        class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                        value="this-week"
+                                    >
+                                        This Week
+                                    </mat-button-toggle>
+                                </mat-button-toggle-group>
+                                <div class="sm:hidden">
+                                    <button
+                                        mat-icon-button
+                                        [matMenuTriggerFor]="distributionMenu"
+                                    >
+                                        <mat-icon
+                                            [svgIcon]="
+                                                'heroicons_outline:ellipsis-vertical'
+                                            "
+                                        ></mat-icon>
+                                    </button>
+                                    <mat-menu #distributionMenu="matMenu">
+                                        <button mat-menu-item>This Week</button>
+                                        <button mat-menu-item>Last Week</button>
+                                    </mat-menu>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-secondary mt-2 text-center">
+                            {{ transactionDistributionPeriod }}
+                        </div>
                         <div
-                            class="mr-4 truncate text-lg font-medium leading-6 tracking-tight"
+                            class="flex h-64 flex-auto flex-col items-center justify-center"
                         >
-                            Budget
+                            <canvas
+                                baseChart
+                                [datasets]="polarAreaChartDatasets"
+                                [labels]="polarAreaChartLabels"
+                                [options]="polarAreaChartOptions"
+                                [type]="'polarArea'"
+                            ></canvas>
                         </div>
-                        <div class="text-secondary font-medium">
-                            Monthly budget summary
-                        </div>
-                    </div>
-                    <div class="-mr-2 -mt-2 ml-auto">
-                        <button mat-icon-button>
-                            <mat-icon
-                                class="icon-size-5"
-                                svgIcon="heroicons_mini:ellipsis-vertical"
-                            ></mat-icon>
-                        </button>
-                        <div>
-                            <button>Expenses breakdown</button>
-                            <button>Savings breakdown</button>
-                            <button>Bills breakdown</button>
-                            <div class="my-2"></div>
-                            <button>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        svgIcon="heroicons_solid:printer"
-                                    ></mat-icon>
-                                    <span>Print budget summary</span>
-                                </span>
-                            </button>
-                            <button>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        svgIcon="heroicons_solid:envelope"
-                                    ></mat-icon>
-                                    <span>Email budget summary</span>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    Last month; you had <strong>223</strong> expense
-                    transactions, <strong>12</strong> savings entries and
-                    <strong>4</strong> bills.
-                </div>
-                <div class="my-8 space-y-8">
-                    <div class="flex flex-col">
-                        <div class="flex items-center">
-                            <div
-                                class="flex h-14 w-14 items-center justify-center rounded bg-red-100 text-red-800 dark:bg-red-600 dark:text-red-50"
-                            >
-                                <mat-icon
-                                    class="text-current"
-                                    svgIcon="heroicons_outline:credit-card"
-                                ></mat-icon>
+                        <div class="mt-4 flex justify-around">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold">
+                                    {{
+                                        transactionDistribution.totalSpent
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
+                                </div>
+                                <div class="text-secondary">Total Spent</div>
                             </div>
-                            <div class="ml-4 flex-auto leading-none">
-                                <div class="text-secondary text-sm font-medium">
-                                    Expenses
+                            <div class="text-center">
+                                <div class="text-3xl font-bold">
+                                    {{
+                                        transactionDistribution.totalReceived
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.0-0'
+                                    }}
                                 </div>
-                                <div class="mt-2 text-2xl font-medium">
-                                    $3,500.00
-                                </div>
-                                <div
-                                    class="mt-3 h-2 rounded-full bg-gray-200"
-                                    style="width: 100%"
+                                <div class="text-secondary">Total Received</div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- Recent Transactions (Right) -->
+                    <div
+                        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div
+                                class="truncate text-lg font-medium leading-6 tracking-tight"
+                            >
+                                Recent Transactions
+                            </div>
+                            <div class="-mr-3 -mt-2 ml-2">
+                                <mat-button-toggle-group
+                                    class="hidden space-x-1 border-none sm:inline-flex"
+                                    value="today"
+                                    #recentDaySelector="matButtonToggleGroup"
                                 >
-                                    <div
-                                        class="h-2 rounded-full bg-red-500"
-                                        style="width: 70%"
-                                    ></div>
+                                    <mat-button-toggle
+                                        class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                        value="yesterday"
+                                    >
+                                        Yesterday
+                                    </mat-button-toggle>
+                                    <mat-button-toggle
+                                        class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                        value="today"
+                                    >
+                                        Today
+                                    </mat-button-toggle>
+                                </mat-button-toggle-group>
+                                <div class="sm:hidden">
+                                    <button
+                                        mat-icon-button
+                                        [matMenuTriggerFor]="recentMenu"
+                                    >
+                                        <mat-icon
+                                            [svgIcon]="
+                                                'heroicons_outline:ellipsis-vertical'
+                                            "
+                                        ></mat-icon>
+                                    </button>
+                                    <mat-menu #recentMenu="matMenu">
+                                        <button mat-menu-item>Today</button>
+                                        <button mat-menu-item>Yesterday</button>
+                                    </mat-menu>
                                 </div>
-                            </div>
-                            <div
-                                class="ml-6 mt-auto flex min-w-18 items-end justify-end"
-                            >
-                                <div class="text-lg leading-none">2.6%</div>
-                                <mat-icon
-                                    class="ml-1 text-green-600 icon-size-4"
-                                    svgIcon="heroicons_mini:arrow-long-down"
-                                ></mat-icon>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center">
-                            <div
-                                class="flex h-14 w-14 items-center justify-center rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-600 dark:text-indigo-50"
-                            >
-                                <mat-icon
-                                    class="text-current"
-                                    svgIcon="heroicons_outline:banknotes"
-                                ></mat-icon>
-                            </div>
-                            <div class="ml-4 flex-auto leading-none">
-                                <div class="text-secondary text-sm font-medium">
-                                    Savings
-                                </div>
-                                <div class="mt-2 text-2xl font-medium">
-                                    $1,200.00
-                                </div>
-                                <div
-                                    class="mt-3 h-2 rounded-full bg-gray-200"
-                                    style="width: 100%"
-                                >
-                                    <div
-                                        class="h-2 rounded-full bg-indigo-500"
-                                        style="width: 60%"
-                                    ></div>
-                                </div>
-                            </div>
-                            <div
-                                class="ml-6 mt-auto flex min-w-18 items-end justify-end"
-                            >
-                                <div class="text-lg leading-none">12.7%</div>
-                                <mat-icon
-                                    class="ml-1 text-red-600 icon-size-4"
-                                    svgIcon="heroicons_mini:arrow-long-up"
-                                ></mat-icon>
-                            </div>
+                        <div class="text-secondary mt-2 text-center">
+                            {{ recentTransactionsPeriod }}
                         </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center">
-                            <div
-                                class="flex h-14 w-14 items-center justify-center rounded bg-teal-100 text-teal-800 dark:bg-teal-600 dark:text-teal-50"
-                            >
-                                <mat-icon
-                                    class="text-current"
-                                    svgIcon="heroicons_outline:light-bulb"
-                                ></mat-icon>
-                            </div>
-                            <div class="ml-4 flex-auto leading-none">
-                                <div class="text-secondary text-sm font-medium">
-                                    Bills
+                        <div class="mt-4">
+                            @if (recentTransactions.length > 0) {
+                                <div class="space-y-4">
+                                    @for (
+                                        transaction of recentTransactions;
+                                        track trackByFn($index, transaction)
+                                    ) {
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div>
+                                                <div class="font-medium">
+                                                    {{
+                                                        transaction.description
+                                                    }}
+                                                </div>
+                                                <div
+                                                    class="text-secondary text-sm"
+                                                >
+                                                    {{
+                                                        transaction.transaction_date
+                                                            | date
+                                                                : 'shortTime'
+                                                                : 'UTC'
+                                                    }}
+                                                    • {{ transaction.category }}
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="text-lg font-semibold"
+                                                >
+                                                    {{
+                                                        transaction.amount
+                                                            | currency
+                                                                : 'INR'
+                                                                : 'symbol'
+                                                                : '1.0-0'
+                                                    }}
+                                                </div>
+                                                <mat-icon
+                                                    class="ml-2"
+                                                    [svgIcon]="
+                                                        'heroicons_outline:chevron-right'
+                                                    "
+                                                ></mat-icon>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
-                                <div class="mt-2 text-2xl font-medium">
-                                    $850.00
+                            } @else {
+                                <div class="text-secondary text-center">
+                                    No transactions available.
                                 </div>
-                                <div
-                                    class="mt-3 h-2 rounded-full bg-gray-200"
-                                    style="width: 100%"
-                                >
-                                    <div
-                                        class="h-2 rounded-full bg-teal-500"
-                                        style="width: 100%"
-                                    ></div>
-                                </div>
-                            </div>
-                            <div
-                                class="ml-6 mt-auto flex min-w-18 items-end justify-end"
-                            >
-                                (dep
-                                <div class="text-lg leading-none">105.7%</div>
-                                <mat-icon
-                                    class="ml-1 text-red-600 icon-size-4"
-                                    svgIcon="heroicons_mini:arrow-long-up"
-                                ></mat-icon>
-                            </div>
-                        </div>
-                        <div class="text-secondary mt-3 text-md">
-                            Exceeded your personal limit! Be careful next month.
+                            }
                         </div>
                     </div>
                 </div>
-                <div class="mt-auto flex items-center">
-                    <button class="mt-2" mat-stroked-button>
-                        Download Summary
-                    </button>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </div>

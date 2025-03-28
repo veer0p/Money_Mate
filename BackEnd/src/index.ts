@@ -4,7 +4,10 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import chatRoutes from "./routes/chatRoutes";
 import messageRouters from "./routes/messageRoutes";
+import transactionRoutes from "./routes/transactionRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import bodyParser from "body-parser";
+import path from "path";
 
 const app = express();
 
@@ -26,10 +29,14 @@ app.get("/", (req, res) => {
   res.send("Server is Live 🚀");
 });
 
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 // ✅ Load Routes AFTER enabling CORS
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRouters);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 export default app;

@@ -56,7 +56,13 @@ export class AuthService {
         const url = `${this.BASE_URL}/auth/login`;
         console.log('Request URL:', url); // Debug
         return this.http.post<ApiResponse>(url, { email, password }).pipe(
-            tap((response: any) => console.log('Response:', response)),
+            tap((response: any) => {
+                console.log('Response:', response);
+                // Store userId in localStorage if present
+                if (response.userId) {
+                    localStorage.setItem('userId', response.userId);
+                }
+            }),
             catchError(this.handleError)
         );
     }
@@ -117,9 +123,14 @@ export class AuthService {
         return localStorage.getItem('refreshToken');
     }
 
+    getUserId(): string | null {
+        return localStorage.getItem('userId');
+    }
+
     clearTokens(): void {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userId'); // Clear userId as well
     }
 
     isLoggedIn(): boolean {
