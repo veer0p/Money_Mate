@@ -1,1 +1,193 @@
-<p>transactions works!</p>
+<div
+    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden"
+>
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Transactions</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-64"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon
+                    class="icon-size-5"
+                    matPrefix
+                    [svgIcon]="'heroicons_solid:magnifying-glass'"
+                ></mat-icon>
+                <input
+                    matInput
+                    [autocomplete]="'off'"
+                    [placeholder]="'Search transactions'"
+                />
+            </mat-form-field>
+            <!-- Add transaction button -->
+            <button class="ml-4" mat-flat-button [color]="'primary'">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Transactions list -->
+        <div
+            class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto"
+        >
+            @if (transactions.length > 0) {
+                <div class="grid">
+                    <!-- Header -->
+                    <div
+                        class="transactions-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    >
+                        <div class="hidden md:block">Reference ID</div>
+                        <div>Account Number</div>
+                        <div class="hidden sm:block">Transaction Type</div>
+                        <div class="hidden lg:block">Category</div>
+                        <div class="hidden lg:block">Amount</div>
+                        <div class="hidden sm:block">Transaction Date</div>
+                        <div>Details</div>
+                    </div>
+                    <!-- Rows -->
+                    @for (
+                        transaction of transactions;
+                        track trackByFn($index, transaction)
+                    ) {
+                        <div
+                            class="transactions-grid grid items-center gap-4 border-b px-6 py-3 md:px-8"
+                        >
+                            <!-- Reference ID -->
+                            <div class="hidden truncate md:block">
+                                {{ transaction.reference_id }}
+                            </div>
+                            <!-- Account Number -->
+                            <div class="truncate">
+                                {{ transaction.account_number }}
+                            </div>
+                            <!-- Transaction Type -->
+                            <div class="hidden sm:block">
+                                {{ transaction.transaction_type | titlecase }}
+                            </div>
+                            <!-- Category -->
+                            <div class="hidden lg:block">
+                                {{ transaction.category }}
+                            </div>
+                            <!-- Amount -->
+                            <div class="hidden lg:block">
+                                {{
+                                    transaction.amount
+                                        | currency
+                                            : transaction.currency
+                                            : 'symbol'
+                                            : '1.2-2'
+                                }}
+                            </div>
+                            <!-- Transaction Date -->
+                            <div class="hidden sm:block">
+                                {{
+                                    transaction.transaction_date
+                                        | date: 'mediumDate'
+                                }}
+                            </div>
+                            <!-- Details button -->
+                            <div>
+                                <button
+                                    class="h-7 min-h-7 min-w-10 px-2 leading-6"
+                                    mat-stroked-button
+                                    (click)="toggleDetails(transaction.id)"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            selectedTransaction?.id ===
+                                            transaction.id
+                                                ? 'heroicons_solid:chevron-up'
+                                                : 'heroicons_solid:chevron-down'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            @if (selectedTransaction?.id === transaction.id) {
+                                <ng-container
+                                    *ngTemplateOutlet="
+                                        rowDetailsTemplate;
+                                        context: { $implicit: transaction }
+                                    "
+                                ></ng-container>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Paginator (static for now) -->
+                <mat-paginator
+                    class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
+                    [length]="20"
+                    [pageIndex]="0"
+                    [pageSize]="10"
+                    [pageSizeOptions]="[5, 10, 25, 100]"
+                    [showFirstLastButtons]="true"
+                ></mat-paginator>
+            } @else {
+                <div
+                    class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16"
+                >
+                    There are no transactions!
+                </div>
+            }
+
+            <!-- Details Template -->
+            <ng-template #rowDetailsTemplate let-transaction>
+                <div class="overflow-hidden shadow-lg">
+                    <div class="flex border-b p-8">
+                        <div class="flex flex-col">
+                            <h3 class="text-lg font-semibold">
+                                Transaction Details
+                            </h3>
+                            <p>
+                                <strong>Reference ID:</strong>
+                                {{ transaction.reference_id }}
+                            </p>
+                            <p>
+                                <strong>Account Number:</strong>
+                                {{ transaction.account_number }}
+                            </p>
+                            <p>
+                                <strong>Type:</strong>
+                                {{ transaction.transaction_type | titlecase }}
+                            </p>
+                            <p>
+                                <strong>Category:</strong>
+                                {{ transaction.category }}
+                            </p>
+                            <p>
+                                <strong>Amount:</strong>
+                                {{
+                                    transaction.amount
+                                        | currency
+                                            : transaction.currency
+                                            : 'symbol'
+                                            : '1.2-2'
+                                }}
+                            </p>
+                            <p>
+                                <strong>Date:</strong>
+                                {{
+                                    transaction.transaction_date
+                                        | date: 'mediumDate'
+                                }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>

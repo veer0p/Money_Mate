@@ -30,17 +30,17 @@ const startServer = async () => {
 
 // Helper function to get the local IP address
 function getIPAddress(): string {
-  // const os = require("os");
-  // const interfaces = os.networkInterfaces();
-  // for (const interfaceName in interfaces) {
-  //   const iface = interfaces[interfaceName];
-  //   for (const alias of iface) {
-  //     if (alias.family === "IPv4" && !alias.internal) {
-  //       return alias.address;
-  //     }
-  //   }
-  // }
-  return "192.168.164.6"; // Fallback to localhost if no IP is found
+  const os = require("os");
+  const interfaces = os.networkInterfaces();
+  for (const interfaceName in interfaces) {
+    const iface = interfaces[interfaceName];
+    for (const alias of iface) {
+      if (alias.family === "IPv4" && !alias.internal) {
+        return alias.address;
+      }
+    }
+  }
+  return "0.0.0.0"; // Fallback to localhost if no IP is found
 }
 
 startServer();
