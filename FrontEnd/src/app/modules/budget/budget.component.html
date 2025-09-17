@@ -1,0 +1,130 @@
+<div
+    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden"
+>
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b bg-white px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">
+            Your Budgets
+        </h1>
+
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-64"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon matPrefix class="icon-size-5">search</mat-icon>
+                <input
+                    matInput
+                    [autocomplete]="'off'"
+                    placeholder="Search budgets..."
+                    [formControl]="searchControl"
+                />
+            </mat-form-field>
+
+            <!-- New Budget Button -->
+            <button
+                mat-flat-button
+                color="primary"
+                (click)="addBudget()"
+                class="ml-4 bg-indigo-600 text-white hover:bg-indigo-700"
+            >
+                <mat-icon class="mr-2">add</mat-icon>
+                New Budget
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content with Sticky Footer -->
+    <div class="flex flex-auto flex-col overflow-hidden">
+        <!-- Scrollable area -->
+        <div class="flex-auto overflow-y-auto sm:mb-4">
+            <!-- Header Row -->
+            <div
+                *ngIf="budgets.length > 0"
+                class="grid grid-cols-5 gap-4 bg-gray-50 px-6 py-4 text-md font-semibold text-gray-500 shadow md:px-8"
+            >
+                <div class="col-span-1">Budget Name</div>
+                <div class="col-span-1">Total Amount</div>
+                <div class="col-span-1 hidden sm:block">Start Date</div>
+                <div class="col-span-1 hidden sm:block">End Date</div>
+                <div class="col-span-1 text-right">Actions</div>
+            </div>
+
+            <!-- Budget Rows -->
+            <ng-container *ngFor="let budget of budgets">
+                <div
+                    class="grid grid-cols-5 items-center gap-4 border-b px-6 py-4 transition hover:bg-white md:px-8"
+                >
+                    <div class="col-span-1 truncate font-medium text-gray-900">
+                        {{ budget.budget_name }}
+                    </div>
+                    <div class="col-span-1 truncate text-gray-700">
+                        {{ budget.total_amount | currency: 'INR' }}
+                    </div>
+                    <div class="col-span-1 hidden text-gray-600 sm:block">
+                        {{ budget.start_date | date: 'mediumDate' }}
+                    </div>
+                    <div class="col-span-1 hidden text-gray-600 sm:block">
+                        {{ budget.end_date | date: 'mediumDate' }}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="col-span-1 flex justify-end space-x-2">
+                        <button
+                            mat-icon-button
+                            matTooltip="View"
+                            (click)="viewBudget(budget.id)"
+                        >
+                            <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            matTooltip="Edit"
+                            (click)="editBudget(budget.id)"
+                        >
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            matTooltip="Delete"
+                            (click)="deleteBudget(budget.id)"
+                            class="text-red-500 hover:text-red-700"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Empty State -->
+            <div
+                *ngIf="!budgets.length && !isLoading"
+                class="border-t p-8 text-center text-4xl font-semibold tracking-tight text-gray-500 sm:p-16"
+            >
+                No budgets found. Start by adding one!
+            </div>
+        </div>
+
+        <!-- Paginator -->
+        <mat-paginator
+            *ngIf="budgets.length > 0"
+            class="border-t bg-white px-6 py-4 shadow-sm"
+            [length]="totalBudgets"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 20]"
+            [showFirstLastButtons]="true"
+            (page)="onPageChange($event)"
+        >
+        </mat-paginator>
+    </div>
+</div>

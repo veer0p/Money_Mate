@@ -1,0 +1,14 @@
+{
+  "name": "money-mate",
+  "version": "1.0.0",
+  "description": "Money Mate Application",
+  "scripts": {
+    "start": "concurrently \"cd FrontEnd && npm start\" \"cd BackEnd && npm run dev\"",
+    "f": "cd FrontEnd && npm start",
+    "b": "cd BackEnd && npm run dev",
+    "install:all": "npm install && cd FrontEnd && npm install && cd ../BackEnd && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

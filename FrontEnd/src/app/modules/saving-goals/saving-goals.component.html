@@ -1,0 +1,149 @@
+<div
+    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden"
+>
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b bg-white px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">
+            Saving Goals
+        </h1>
+
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-64"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon matPrefix class="icon-size-5">search</mat-icon>
+                <input
+                    matInput
+                    [autocomplete]="'off'"
+                    placeholder="Search goals..."
+                    [formControl]="searchControl"
+                />
+            </mat-form-field>
+
+            <!-- New Goal Button -->
+            <button
+                mat-flat-button
+                color="primary"
+                (click)="addGoal()"
+                class="ml-4 bg-indigo-600 text-white hover:bg-indigo-700"
+            >
+                <mat-icon class="mr-2">add</mat-icon>
+                New Goal
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex flex-auto flex-col overflow-hidden">
+        <!-- Scrollable area -->
+        <div class="flex-auto overflow-y-auto sm:mb-4">
+            <!-- Header Row -->
+            <div
+                *ngIf="goals.length > 0"
+                class="grid grid-cols-5 gap-4 bg-gray-50 px-6 py-4 text-md font-semibold text-gray-500 shadow md:px-8"
+            >
+                <div class="col-span-1">Title</div>
+                <div class="col-span-1">Goal Amount</div>
+                <div class="col-span-1">Progress</div>
+                <div class="col-span-1">Status</div>
+                <div class="col-span-1 text-right">Actions</div>
+            </div>
+
+            <!-- Goal Rows -->
+            <ng-container *ngFor="let goal of displayedGoals">
+                <div
+                    class="grid grid-cols-5 items-center gap-4 border-b px-6 py-4 transition hover:bg-white md:px-8"
+                >
+                    <div class="col-span-1 truncate font-medium text-gray-900">
+                        {{ goal.title }}
+                    </div>
+                    <div class="col-span-1 truncate text-gray-700">
+                        {{ goal.goal_amount | currency: 'INR' }}
+                    </div>
+                    <div class="col-span-1">
+                        <div class="flex items-center">
+                            <div class="flex-1">
+                                <mat-progress-bar
+                                    [value]="getProgressPercentage(goal)"
+                                    [color]="
+                                        getProgressPercentage(goal) >= 100
+                                            ? 'accent'
+                                            : 'primary'
+                                    "
+                                ></mat-progress-bar>
+                            </div>
+                            <span class="ml-2 text-sm text-gray-600">
+                                {{
+                                    getProgressPercentage(goal)
+                                        | number: '1.0-0'
+                                }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-span-1">
+                        <span [ngClass]="getStatusColor(goal.status)">
+                            {{ goal.status | titlecase }}
+                        </span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="col-span-1 flex justify-end space-x-2">
+                        <button
+                            mat-icon-button
+                            matTooltip="View"
+                            (click)="viewGoal(goal.id)"
+                        >
+                            <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            matTooltip="Edit"
+                            (click)="editGoal(goal.id)"
+                        >
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            matTooltip="Delete"
+                            (click)="deleteGoal(goal.id)"
+                            class="text-red-500 hover:text-red-700"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Empty State -->
+            <div
+                *ngIf="!goals.length && !isLoading"
+                class="border-t p-8 text-center text-4xl font-semibold tracking-tight text-gray-500 sm:p-16"
+            >
+                No saving goals found. Start by adding one!
+            </div>
+        </div>
+
+        <!-- Paginator -->
+        <mat-paginator
+            *ngIf="goals.length > 0"
+            class="border-t bg-white px-6 py-4 shadow-sm"
+            [length]="totalGoals"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 20]"
+            [showFirstLastButtons]="true"
+            (page)="onPageChange($event)"
+        >
+        </mat-paginator>
+    </div>
+</div>

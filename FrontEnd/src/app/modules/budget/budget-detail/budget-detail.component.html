@@ -1,0 +1,304 @@
+<div
+    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden"
+>
+    <!-- Header -->
+    <div
+        class="flex flex-col items-start border-b border-gray-200 bg-white px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <h1 class="text-2xl font-semibold text-gray-900">
+            <span *ngIf="mode === 'add'">Add Budget</span>
+            <span *ngIf="mode === 'edit'">Edit Budget</span>
+            <span *ngIf="mode === 'view'">View Budget</span>
+        </h1>
+        <div class="mt-4 flex gap-3 sm:mt-0">
+            <button
+                *ngIf="mode === 'add' || mode === 'edit'"
+                mat-flat-button
+                color="primary"
+                (click)="onSubmit()"
+                [disabled]="!budgetForm.valid || isLoading"
+                class="shadow-md"
+            >
+                <mat-icon class="mr-2">save</mat-icon>
+                {{ mode === 'add' ? 'Create' : 'Update' }}
+            </button>
+            <button mat-stroked-button (click)="cancel()" class="shadow-md">
+                <mat-icon class="mr-2">cancel</mat-icon>
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+        <div *ngIf="isLoading" class="mb-4">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div class="max-w-full rounded-lg border border-gray-200 bg-white p-6">
+            <form
+                [formGroup]="budgetForm"
+                class="space-y-6"
+                *ngIf="mode === 'add' || mode === 'edit'"
+            >
+                <!-- Budget Name -->
+                <div class="grid grid-cols-1 gap-4">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Budget Name</mat-label>
+                        <input matInput formControlName="budgetName" required />
+                        <mat-error
+                            *ngIf="
+                                budgetForm
+                                    .get('budgetName')
+                                    ?.hasError('required')
+                            "
+                        >
+                            Budget name is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <!-- Total Amount -->
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Target Amount</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            formControlName="totalAmount"
+                            required
+                            [readonly]="mode === 'view'"
+                        />
+                        <mat-error
+                            *ngIf="
+                                budgetForm
+                                    .get('totalAmount')
+                                    ?.hasError('required')
+                            "
+                        >
+                            Target amount is required
+                        </mat-error>
+                        <mat-error
+                            *ngIf="
+                                budgetForm.get('totalAmount')?.hasError('min')
+                            "
+                        >
+                            Amount must be 0 or greater
+                        </mat-error>
+                    </mat-form-field>
+
+                    <!-- Categories -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            Category Allocations
+                        </h2>
+                        <div formArrayName="categories" class="space-y-4">
+                            <div
+                                *ngFor="
+                                    let category of categories.controls;
+                                    let i = index
+                                "
+                                [formGroupName]="i"
+                                class="flex items-center gap-4"
+                            >
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="flex-1"
+                                >
+                                    <mat-label>Category</mat-label>
+                                    <mat-select
+                                        formControlName="category_id"
+                                        required
+                                    >
+                                        <mat-option
+                                            *ngFor="
+                                                let cat of availableCategories
+                                            "
+                                            [value]="cat.id"
+                                            >{{ cat.name }}</mat-option
+                                        >
+                                    </mat-select>
+                                    <mat-error
+                                        *ngIf="
+                                            category
+                                                .get('category_id')
+                                                ?.hasError('required')
+                                        "
+                                    >
+                                        Category is required
+                                    </mat-error>
+                                </mat-form-field>
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="flex-1"
+                                >
+                                    <mat-label>Amount</mat-label>
+                                    <input
+                                        matInput
+                                        type="number"
+                                        formControlName="amount"
+                                        required
+                                    />
+                                    <mat-error
+                                        *ngIf="
+                                            category
+                                                .get('amount')
+                                                ?.hasError('required')
+                                        "
+                                    >
+                                        Amount is required
+                                    </mat-error>
+                                    <mat-error
+                                        *ngIf="
+                                            category
+                                                .get('amount')
+                                                ?.hasError('min')
+                                        "
+                                    >
+                                        Amount must be 0 or greater
+                                    </mat-error>
+                                </mat-form-field>
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    (click)="removeCategory(i)"
+                                    *ngIf="categories.controls.length > 1"
+                                >
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                            <mat-error
+                                *ngIf="
+                                    budgetForm
+                                        .get('categories')
+                                        ?.hasError('required') &&
+                                    categories.length === 0
+                                "
+                            >
+                                At least one category is required
+                            </mat-error>
+                        </div>
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            (click)="addCategory()"
+                            type="button"
+                        >
+                            <mat-icon class="mr-2">add</mat-icon>
+                            Add Category
+                        </button>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Start Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="startPicker"
+                                formControlName="startDate"
+                                required
+                            />
+                            <mat-datepicker-toggle
+                                matIconSuffix
+                                [for]="startPicker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #startPicker></mat-datepicker>
+                            <mat-error
+                                *ngIf="
+                                    budgetForm
+                                        .get('startDate')
+                                        ?.hasError('required')
+                                "
+                            >
+                                Start date is required
+                            </mat-error>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>End Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="endPicker"
+                                formControlName="endDate"
+                                required
+                            />
+                            <mat-datepicker-toggle
+                                matIconSuffix
+                                [for]="endPicker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #endPicker></mat-datepicker>
+                            <mat-error
+                                *ngIf="
+                                    budgetForm
+                                        .get('endDate')
+                                        ?.hasError('required')
+                                "
+                            >
+                                End date is required
+                            </mat-error>
+                            <mat-error
+                                *ngIf="
+                                    budgetForm
+                                        .get('endDate')
+                                        ?.hasError('dateRange')
+                                "
+                            >
+                                End date must be after start date
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </form>
+
+            <!-- View Mode -->
+            <div
+                *ngIf="mode === 'view'"
+                class="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+            >
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <p class="text-gray-700">
+                        <strong>Budget Name:</strong>
+                        {{ budgetForm.get('budgetName')?.value || 'N/A' }}
+                    </p>
+                    <p class="text-gray-700">
+                        <strong>Target Amount:</strong>
+                        {{
+                            budgetForm.get('totalAmount')?.value
+                                | currency: 'INR'
+                        }}
+                    </p>
+                    <p class="text-gray-700">
+                        <strong>Start Date:</strong>
+                        {{
+                            budgetForm.get('startDate')?.value
+                                | date: 'mediumDate'
+                        }}
+                    </p>
+                    <p class="text-gray-700">
+                        <strong>End Date:</strong>
+                        {{
+                            budgetForm.get('endDate')?.value
+                                | date: 'mediumDate'
+                        }}
+                    </p>
+                </div>
+
+                <div class="mt-6">
+                    <h2 class="mb-2 text-lg font-semibold text-gray-900">
+                        Categories
+                    </h2>
+                    <ul class="list-disc space-y-1 pl-6 text-gray-700">
+                        <li *ngFor="let category of categories.controls">
+                            {{
+                                getCategoryName(
+                                    category.get('category_id')?.value
+                                )
+                            }}:
+                            {{
+                                category.get('amount')?.value | currency: 'INR'
+                            }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+id,insight_type,date_or_month,account_number,category,amount,income,expense,balance,notes,user_id
+fdf4d3f5-396a-46b6-9a63-d2563dbd7389,Monthly Spend Summary,2023-04,,,765.97,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+e4eee705-1f9d-4af9-8084-3b70efbddb04,Monthly Spend Summary,2023-05,,,516.35,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+3dbc2aa0-82f4-48da-8dc5-482960fb9ae1,Monthly Spend Summary,2023-06,,,542.5,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+afbf3816-d8d4-406d-851c-2715aeaba968,Monthly Spend Summary,2023-07,,,716.22,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+197ca7f7-7824-4744-86a9-fa60985412ef,Monthly Spend Summary,2023-08,,,1629.63,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+59454279-d5bf-4e52-b9a6-3297e253c58b,Monthly Spend Summary,2023-09,,,563.95,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+35a0b20e-db87-4927-83b6-f7893da78f78,Monthly Spend Summary,2023-10,,,1262.03,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+c4187572-f378-4146-b537-bd36cc233d9d,Monthly Spend Summary,2023-11,,,1278.68,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+0bbd0728-9c89-40f4-b222-8444b636232e,Monthly Spend Summary,2023-12,,,1089.42,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+d4b9f5fe-afe1-4006-bdae-0b3d2067682b,Monthly Spend Summary,2024-01,,,466.93,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+61ab89e8-597c-4a5e-b4bd-a8cf55c3c2af,Monthly Spend Summary,2024-02,,,1338.3600000000001,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+367707b4-2fd6-40d9-9de3-f035d77db44a,Monthly Spend Summary,2024-03,,,1149.03,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+409f2783-0a50-44d8-ba0c-77bea2a2ba85,Monthly Spend Summary,2024-04,,,492.88,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+afbbdee0-2e31-428b-a235-45a9d687fd6f,Monthly Spend Summary,2024-05,,,720.7,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+fda77d85-284b-4922-a0e4-fef13712e301,Monthly Spend Summary,2024-06,,,1012.32,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+f842f546-df9f-4273-9e7c-5aac0c66cf90,Monthly Spend Summary,2024-07,,,1179.38,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+05f782bd-8b54-4c27-9242-b44120a98170,Monthly Spend Summary,2024-08,,,620.71,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+7360cba3-c375-4780-8a8e-4f794a70f57f,Monthly Spend Summary,2024-09,,,1244.67,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+75ef7616-692d-4e62-a343-5909ee9d2b43,Monthly Spend Summary,2024-10,,,1620.38,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+60d58eb8-96e2-4c13-8bb0-c988a8af526d,Monthly Spend Summary,2024-11,,,682.14,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+1c0e8fd4-2f56-4942-862a-a9ffb60f6c4e,Monthly Spend Summary,2024-12,,,868.45,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+38c85e0e-ef06-48e8-b881-3a273ce57bfa,Monthly Spend Summary,2025-01,,,939.86,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+ef31b838-f093-478c-9c31-2953ffeeb194,Monthly Spend Summary,2025-02,,,526.0699999999999,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+2e0aefd4-99a3-4a83-b8aa-ccf584132bd5,Monthly Spend Summary,2025-03,,,689.41,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+108da038-fe6b-4856-a965-8018596fa7a1,Monthly Spend Summary,2025-04,,,272.46,,,,,839a60a1-91b1-4d97-a935-5724cf3463bb
+ea5123f0-5564-4384-a6b4-88ff47568656,Income vs Expense,2023-04,,,,1416.21,765.97,,Net Savings: 650.24,839a60a1-91b1-4d97-a935-5724cf3463bb
+8b9fe468-4a2b-4731-bf02-040c1001b480,Income vs Expense,2023-05,,,,2056.27,516.35,,Net Savings: 1539.92,839a60a1-91b1-4d97-a935-5724cf3463bb
+be6b8e55-46c5-494d-8ce5-95ca6d65a5e2,Income vs Expense,2023-06,,,,3324.43,542.5,,Net Savings: 2781.93,839a60a1-91b1-4d97-a935-5724cf3463bb
+9f1232f1-f043-410a-9cea-d59d7983f4e3,Income vs Expense,2023-07,,,,2419.54,716.22,,Net Savings: 1703.32,839a60a1-91b1-4d97-a935-5724cf3463bb
+52688546-a029-4ff2-b437-4acbb00fde91,Income vs Expense,2023-08,,,,1200.3,1629.63,,Net Savings: -429.33,839a60a1-91b1-4d97-a935-5724cf3463bb
+605294a1-8fcc-4020-8326-682288cfe5c8,Income vs Expense,2023-09,,,,2916.58,563.95,,Net Savings: 2352.63,839a60a1-91b1-4d97-a935-5724cf3463bb
+ce1def11-226e-4fc3-86d1-e156052e0795,Income vs Expense,2023-10,,,,2286.5,1262.03,,Net Savings: 1024.47,839a60a1-91b1-4d97-a935-5724cf3463bb
+3364924a-1b20-4bad-90a0-cefb76f8d65f,Income vs Expense,2023-11,,,,774.9300000000001,1278.68,,Net Savings: -503.75,839a60a1-91b1-4d97-a935-5724cf3463bb
+f43e75ed-8db6-4a16-b550-8514c7978b2e,Income vs Expense,2023-12,,,,2362.61,1089.42,,Net Savings: 1273.19,839a60a1-91b1-4d97-a935-5724cf3463bb
+a44fede1-5637-4b5f-a2ec-121a94e5d76f,Income vs Expense,2024-01,,,,2407.63,466.93,,Net Savings: 1940.70,839a60a1-91b1-4d97-a935-5724cf3463bb
+4fee5464-b739-4c55-a5af-651aa8df699d,Income vs Expense,2024-02,,,,1753.6000000000001,1338.3600000000001,,Net Savings: 415.24,839a60a1-91b1-4d97-a935-5724cf3463bb
+d16593f7-1986-4b3b-91ed-a327288a8510,Income vs Expense,2024-03,,,,2718.24,1149.03,,Net Savings: 1569.21,839a60a1-91b1-4d97-a935-5724cf3463bb
+68b2d15f-7b97-40f8-a970-d23321f8e7ef,Income vs Expense,2024-04,,,,3385.24,492.88,,Net Savings: 2892.36,839a60a1-91b1-4d97-a935-5724cf3463bb
+a84b60e1-ca8e-492b-9b33-71b5a2897e88,Income vs Expense,2024-05,,,,2635.95,720.7,,Net Savings: 1915.25,839a60a1-91b1-4d97-a935-5724cf3463bb
+42f829d9-ec23-4471-83e8-b61f6c4a2edf,Income vs Expense,2024-06,,,,2315.66,1012.32,,Net Savings: 1303.34,839a60a1-91b1-4d97-a935-5724cf3463bb
+b6725a72-14c8-41c6-8a95-153505cdd609,Income vs Expense,2024-07,,,,2304.4900000000002,1179.38,,Net Savings: 1125.11,839a60a1-91b1-4d97-a935-5724cf3463bb
+28a2ed0d-94f6-4a96-a73b-874ad78ce67a,Income vs Expense,2024-08,,,,3100.54,620.71,,Net Savings: 2479.83,839a60a1-91b1-4d97-a935-5724cf3463bb
+d170130e-0d1c-4e0c-acdb-175b420f59c3,Income vs Expense,2024-09,,,,2110.38,1244.67,,Net Savings: 865.71,839a60a1-91b1-4d97-a935-5724cf3463bb
+894f9417-eecd-49b8-bcb4-d06c59591535,Income vs Expense,2024-10,,,,1133.48,1620.38,,Net Savings: -486.90,839a60a1-91b1-4d97-a935-5724cf3463bb
+e4bb6927-db6c-4842-be30-1fc882cfdb79,Income vs Expense,2024-11,,,,3194.7,682.14,,Net Savings: 2512.56,839a60a1-91b1-4d97-a935-5724cf3463bb
+f4602e58-a9ce-4aee-8619-8eb19996d737,Income vs Expense,2024-12,,,,2050.12,868.45,,Net Savings: 1181.67,839a60a1-91b1-4d97-a935-5724cf3463bb
+9f7c06b0-4295-4443-8b59-e7724114d044,Income vs Expense,2025-01,,,,2817.17,939.86,,Net Savings: 1877.31,839a60a1-91b1-4d97-a935-5724cf3463bb
+324e6aa6-4548-488d-acae-8202f214c5a0,Income vs Expense,2025-02,,,,2435.36,526.0699999999999,,Net Savings: 1909.29,839a60a1-91b1-4d97-a935-5724cf3463bb
+ce6ce605-9ad3-42b8-b5ab-db459a3ab40c,Income vs Expense,2025-03,,,,1829.08,689.41,,Net Savings: 1139.67,839a60a1-91b1-4d97-a935-5724cf3463bb
+2d7207da-18b9-42c9-ad58-b86040ebd0b1,Income vs Expense,2025-04,,,,917.8399999999999,272.46,,Net Savings: 645.38,839a60a1-91b1-4d97-a935-5724cf3463bb
+cd7fae2a-9e8a-4470-a353-1a75c35bedd3,Spending Pattern - Day,Sunday,,,4118.09,,,,Top spending day,839a60a1-91b1-4d97-a935-5724cf3463bb
+2f51abf1-4dd5-49c0-95ea-218b9fd9dade,Spending Pattern - Day,Thursday,,,3950.7599999999998,,,,Top spending day,839a60a1-91b1-4d97-a935-5724cf3463bb
+6b725972-31f5-4106-9c29-31fc003f1936,Spending Pattern - Day,Friday,,,3612.84,,,,Top spending day,839a60a1-91b1-4d97-a935-5724cf3463bb
+5e34f4d6-d279-4d30-a765-4f386525dd48,Spending Pattern - Hour,4:00,,,1582.71,,,,Peak spending hour,839a60a1-91b1-4d97-a935-5724cf3463bb
+1010ce0c-6c51-4be3-a736-a91bd00ac90f,Spending Pattern - Hour,12:00,,,1444.99,,,,Peak spending hour,839a60a1-91b1-4d97-a935-5724cf3463bb
+2e7a4420-e252-48c2-b7f8-bbc5821a84aa,Spending Pattern - Hour,11:00,,,1405.85,,,,Peak spending hour,839a60a1-91b1-4d97-a935-5724cf3463bb
+ee6b46a8-0fb4-42c3-8c6d-a175f9c5dad3,Financial Health - Savings Rate,,,,0.5082718805730945,,,,Average monthly savings rate,839a60a1-91b1-4d97-a935-5724cf3463bb
+7910219b-4df5-48c8-a8fd-56b6dcd0380a,Financial Health - Emergency Fund,,,,,,,33778.35,Emergency fund covers 194.9 months of expenses,839a60a1-91b1-4d97-a935-5724cf3463bb
+f1d7ca62-3ae7-4b91-b769-24618d5e2d04,Savings Opportunity - Top Category,,,Entertainment,3094.78,,,,Consider reviewing expenses in this category,839a60a1-91b1-4d97-a935-5724cf3463bb
+f676e9d5-9fa6-45c7-a8c2-5d96c95fbfde,Savings Opportunity - Top Category,,,Savings,2826.95,,,,Consider reviewing expenses in this category,839a60a1-91b1-4d97-a935-5724cf3463bb
+54959918-2145-49a0-a95e-4734610b88ee,Savings Opportunity - Top Category,,,Shopping,2793.4,,,,Consider reviewing expenses in this category,839a60a1-91b1-4d97-a935-5724cf3463bb
+47b4afda-01cd-4b75-9a65-bc7d97f2b344,Savings Opportunity - Top Category,,,Banking,2638.47,,,,Consider reviewing expenses in this category,839a60a1-91b1-4d97-a935-5724cf3463bb
+83b3f1c1-365b-4b52-bb34-ef2b58ffcfcd,Savings Opportunity - Top Category,,,Food,2257.58,,,,Consider reviewing expenses in this category,839a60a1-91b1-4d97-a935-5724cf3463bb
+405e05cf-04df-4420-be1e-ef04cbbaec4d,Alert - Unusual Spending,Sunday,,,4118.09,,,,Unusually high spending detected on Sunday,839a60a1-91b1-4d97-a935-5724cf3463bb
+1458e5f7-cf43-4b96-b350-05cf73a8500d,Alert - Unusual Spending,Thursday,,,3950.7599999999998,,,,Unusually high spending detected on Thursday,839a60a1-91b1-4d97-a935-5724cf3463bb
+ec9bbeaf-abae-45f7-8e91-928501679a77,Alert - Unusual Spending,Friday,,,3612.84,,,,Unusually high spending detected on Friday,839a60a1-91b1-4d97-a935-5724cf3463bb

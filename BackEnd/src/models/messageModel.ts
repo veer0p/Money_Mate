@@ -43,9 +43,8 @@ Message.init(
     modelName: "Message",
     indexes: [
       {
-        unique: true, // Add a unique constraint
-        fields: ["user_id", "sender", "message_body"], // Composite unique key
-        name: "unique_message", // Optional: Name the constraint
+        unique: true,
+        fields: ["user_id", "sender", "message_body"]
       },
     ],
   }

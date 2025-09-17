@@ -1,0 +1,449 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b bg-white px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <!-- Title and Actions -->
+        <div class="flex flex-1 items-center justify-between">
+            <!-- Title -->
+            <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">
+                {{ isEditMode ? 'Edit' : isViewMode ? 'View' : 'New' }} Saving
+                Goal
+            </h1>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-4">
+                <button
+                    mat-button
+                    type="button"
+                    (click)="onCancel()"
+                    class="text-gray-600 hover:text-gray-900"
+                >
+                    Cancel
+                </button>
+                <button
+                    *ngIf="!isViewMode"
+                    mat-flat-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="goalForm.invalid || isLoading"
+                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    (click)="onSubmit()"
+                >
+                    {{ isEditMode ? 'Update' : 'Create' }} Goal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-6 md:p-8">
+        <!-- View Mode -->
+        <div *ngIf="isViewMode && currentGoal" class="space-y-8">
+            <!-- Goal Overview -->
+            <div class="rounded-xl bg-white p-8 shadow-sm">
+                <div class="mb-6 flex items-center justify-between">
+                    <h2 class="text-3xl font-bold text-gray-900">
+                        {{ currentGoal.title }}
+                    </h2>
+                    <span
+                        class="px-4 py-2 rounded-full text-sm font-medium {{
+                            getStatusColor(calculateStatus())
+                        }}"
+                    >
+                        {{ calculateStatus() | titlecase }}
+                    </span>
+                </div>
+                <p class="mb-8 text-lg text-gray-600">
+                    {{ currentGoal.description }}
+                </p>
+
+                <!-- Progress Section -->
+                <div class="mb-8">
+                    <div class="mb-2 flex justify-between">
+                        <span class="text-sm font-medium text-gray-700"
+                            >Progress</span
+                        >
+                        <span class="text-sm font-medium text-gray-700"
+                            >{{
+                                getProgressPercentage() | number: '1.0-0'
+                            }}%</span
+                        >
+                    </div>
+                    <div class="h-3 w-full rounded-full bg-gray-200">
+                        <div
+                            class="h-3 rounded-full bg-indigo-600 transition-all duration-500"
+                            [style.width.%]="getProgressPercentage()"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Financial Details -->
+                <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <div class="rounded-lg bg-gray-50 p-6">
+                        <h3 class="mb-2 text-sm font-medium text-gray-500">
+                            Goal Amount
+                        </h3>
+                        <p class="text-3xl font-bold text-gray-900">
+                            ₹{{ currentGoal.goal_amount | number: '1.0-2' }}
+                        </p>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 p-6">
+                        <h3 class="mb-2 text-sm font-medium text-gray-500">
+                            Saved Amount
+                        </h3>
+                        <p class="text-3xl font-bold text-gray-900">
+                            ₹{{ currentGoal.saved_amount | number: '1.0-2' }}
+                        </p>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 p-6">
+                        <h3 class="mb-2 text-sm font-medium text-gray-500">
+                            Remaining Amount
+                        </h3>
+                        <p class="text-3xl font-bold text-gray-900">
+                            ₹{{ getRemainingAmount() | number: '1.0-2' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="rounded-lg bg-gray-50 p-6">
+                    <h3 class="mb-4 text-lg font-medium text-gray-900">
+                        Timeline
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div
+                                class="h-3 w-3 flex-shrink-0 rounded-full bg-indigo-600"
+                            ></div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">
+                                    Start Date
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{
+                                        currentGoal.start_date
+                                            | date: 'mediumDate'
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="h-3 w-3 flex-shrink-0 rounded-full bg-indigo-600"
+                            ></div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">
+                                    End Date
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{
+                                        currentGoal.end_date
+                                            | date: 'mediumDate'
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="h-3 w-3 flex-shrink-0 rounded-full bg-indigo-600"
+                            ></div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">
+                                    Days Remaining
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ getDaysRemaining() }} days
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Form -->
+        <div *ngIf="!isViewMode" class="flex flex-col gap-8 md:flex-row">
+            <!-- Form Section (70%) -->
+            <div class="w-full md:w-7/12">
+                <div class="rounded-2xl bg-white p-8 shadow-lg">
+                    <form [formGroup]="goalForm" class="space-y-6">
+                        <!-- Title -->
+                        <div class="space-y-2">
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Title</label
+                            >
+                            <mat-form-field class="w-full" appearance="outline">
+                                <input
+                                    matInput
+                                    formControlName="title"
+                                    placeholder="Enter goal title"
+                                    class="rounded-lg"
+                                />
+                                <mat-error
+                                    *ngIf="
+                                        goalForm
+                                            .get('title')
+                                            ?.hasError('required')
+                                    "
+                                >
+                                    Title is required
+                                </mat-error>
+                                <mat-error
+                                    *ngIf="
+                                        goalForm
+                                            .get('title')
+                                            ?.hasError('maxlength')
+                                    "
+                                >
+                                    Title must be less than 100 characters
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="space-y-2">
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Description</label
+                            >
+                            <mat-form-field class="w-full" appearance="outline">
+                                <textarea
+                                    matInput
+                                    formControlName="description"
+                                    placeholder="Enter goal description"
+                                    rows="4"
+                                    class="rounded-lg"
+                                ></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Goal Amount -->
+                        <div class="space-y-2">
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Goal Amount</label
+                            >
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>Enter goal amount</mat-label>
+                                <span matPrefix class="ml-2 text-gray-500"
+                                    >₹&nbsp;</span
+                                >
+                                <input
+                                    matInput
+                                    type="number"
+                                    formControlName="goal_amount"
+                                    class="rounded-lg"
+                                />
+                                <mat-error
+                                    *ngIf="
+                                        goalForm
+                                            .get('goal_amount')
+                                            ?.hasError('required')
+                                    "
+                                >
+                                    Goal amount is required
+                                </mat-error>
+                                <mat-error
+                                    *ngIf="
+                                        goalForm
+                                            .get('goal_amount')
+                                            ?.hasError('min')
+                                    "
+                                >
+                                    Goal amount must be greater than 0
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <!-- Start Date -->
+                            <div class="space-y-2">
+                                <label
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Start Date</label
+                                >
+                                <mat-form-field
+                                    class="w-full"
+                                    appearance="outline"
+                                >
+                                    <input
+                                        matInput
+                                        [matDatepicker]="startDatePicker"
+                                        formControlName="start_date"
+                                        class="rounded-lg"
+                                    />
+                                    <mat-datepicker-toggle
+                                        matSuffix
+                                        [for]="startDatePicker"
+                                    ></mat-datepicker-toggle>
+                                    <mat-datepicker
+                                        #startDatePicker
+                                    ></mat-datepicker>
+                                    <mat-error
+                                        *ngIf="
+                                            goalForm
+                                                .get('start_date')
+                                                ?.hasError('required')
+                                        "
+                                    >
+                                        Start date is required
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+
+                            <!-- End Date -->
+                            <div class="space-y-2">
+                                <label
+                                    class="block text-sm font-medium text-gray-700"
+                                    >End Date</label
+                                >
+                                <mat-form-field
+                                    class="w-full"
+                                    appearance="outline"
+                                >
+                                    <input
+                                        matInput
+                                        [matDatepicker]="endDatePicker"
+                                        formControlName="end_date"
+                                        class="rounded-lg"
+                                    />
+                                    <mat-datepicker-toggle
+                                        matSuffix
+                                        [for]="endDatePicker"
+                                    ></mat-datepicker-toggle>
+                                    <mat-datepicker
+                                        #endDatePicker
+                                    ></mat-datepicker>
+                                    <mat-error
+                                        *ngIf="
+                                            goalForm
+                                                .get('end_date')
+                                                ?.hasError('required')
+                                        "
+                                    >
+                                        End date is required
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Suggestions Section (30%) -->
+            <div class="w-full md:w-5/12">
+                <div class="rounded-2xl bg-white p-6 shadow-lg">
+                    <h3 class="mb-4 text-lg font-semibold text-gray-900">
+                        Saving Goal Suggestions
+                    </h3>
+                    <div class="space-y-4">
+                        <!-- Emergency Fund -->
+                        <div
+                            class="rounded-xl bg-blue-50 p-4 transition-colors duration-200 hover:bg-blue-100"
+                        >
+                            <h4 class="mb-1 text-sm font-medium text-blue-900">
+                                Emergency Fund
+                            </h4>
+                            <p class="mb-2 text-sm text-blue-700">
+                                Save 3-6 months of living expenses for
+                                unexpected situations
+                            </p>
+                            <div
+                                class="flex items-center text-xs text-blue-600"
+                            >
+                                <mat-icon class="mr-1 text-sm">info</mat-icon>
+                                <span>Recommended: ₹50,000 - ₹1,00,000</span>
+                            </div>
+                        </div>
+
+                        <!-- Vacation Fund -->
+                        <div
+                            class="rounded-xl bg-green-50 p-4 transition-colors duration-200 hover:bg-green-100"
+                        >
+                            <h4 class="mb-1 text-sm font-medium text-green-900">
+                                Vacation Fund
+                            </h4>
+                            <p class="mb-2 text-sm text-green-700">
+                                Plan your dream vacation with a dedicated
+                                savings goal
+                            </p>
+                            <div
+                                class="flex items-center text-xs text-green-600"
+                            >
+                                <mat-icon class="mr-1 text-sm"
+                                    >flight_takeoff</mat-icon
+                                >
+                                <span>Recommended: ₹20,000 - ₹50,000</span>
+                            </div>
+                        </div>
+
+                        <!-- Home Down Payment -->
+                        <div
+                            class="rounded-xl bg-purple-50 p-4 transition-colors duration-200 hover:bg-purple-100"
+                        >
+                            <h4
+                                class="mb-1 text-sm font-medium text-purple-900"
+                            >
+                                Home Down Payment
+                            </h4>
+                            <p class="mb-2 text-sm text-purple-700">
+                                Start saving for your future home's down payment
+                            </p>
+                            <div
+                                class="flex items-center text-xs text-purple-600"
+                            >
+                                <mat-icon class="mr-1 text-sm">home</mat-icon>
+                                <span>Recommended: 20% of property value</span>
+                            </div>
+                        </div>
+
+                        <!-- Education Fund -->
+                        <div
+                            class="rounded-xl bg-yellow-50 p-4 transition-colors duration-200 hover:bg-yellow-100"
+                        >
+                            <h4
+                                class="mb-1 text-sm font-medium text-yellow-900"
+                            >
+                                Education Fund
+                            </h4>
+                            <p class="mb-2 text-sm text-yellow-700">
+                                Save for higher education or skill development
+                            </p>
+                            <div
+                                class="flex items-center text-xs text-yellow-600"
+                            >
+                                <mat-icon class="mr-1 text-sm">school</mat-icon>
+                                <span>Recommended: ₹1,00,000 - ₹5,00,000</span>
+                            </div>
+                        </div>
+
+                        <!-- Retirement Fund -->
+                        <div
+                            class="rounded-xl bg-red-50 p-4 transition-colors duration-200 hover:bg-red-100"
+                        >
+                            <h4 class="mb-1 text-sm font-medium text-red-900">
+                                Retirement Fund
+                            </h4>
+                            <p class="mb-2 text-sm text-red-700">
+                                Start building your retirement corpus early
+                            </p>
+                            <div class="flex items-center text-xs text-red-600">
+                                <mat-icon class="mr-1 text-sm"
+                                    >elderly</mat-icon
+                                >
+                                <span>Recommended: 15% of monthly income</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

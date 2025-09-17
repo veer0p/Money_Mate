@@ -114,7 +114,7 @@ export class ProfileComponent implements OnInit {
         if (!this.userId) return;
 
         // Generate a QR code with the userId
-        const qrData = `money-mate://link-user/${this.userId}`; // Example URL scheme for the app
+        const qrData = `${this.userId}`; // Example URL scheme for the app
         QRCode.toDataURL(qrData, { width: 200, margin: 1 }, (err, url) => {
             if (err) {
                 console.error('Error generating QR code:', err);

@@ -1,0 +1,589 @@
+<div class="flex w-full flex-auto flex-col">
+    <div
+        class="bg-card relative flex flex-0 flex-col border-b px-6 py-8 dark:bg-default sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <div class="text-4xl font-extrabold tracking-tight">
+            Financial Insights
+        </div>
+        <div class="mt-6 flex shrink-0 items-center gap-4 sm:ml-4 sm:mt-0">
+            <mat-button-toggle-group
+                [value]="viewMode"
+                (change)="toggleViewMode()"
+            >
+                <mat-button-toggle value="cards">
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:squares-2x2'"
+                    ></mat-icon>
+                    Cards
+                </mat-button-toggle>
+                <mat-button-toggle value="charts">
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:chart-bar'"
+                    ></mat-icon>
+                    Charts
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+            <!-- <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-64"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon
+                    class="icon-size-5"
+                    matPrefix
+                    [svgIcon]="'heroicons_solid:magnifying-glass'"
+                ></mat-icon>
+                <input
+                    matInput
+                    [autocomplete]="'off'"
+                    [placeholder]="'Search insights (not implemented)'"
+                    [formControl]="filterForm.controls.search"
+                />
+                <button
+                    *ngIf="filterForm.controls.search.value"
+                    mat-icon-button
+                    matSuffix
+                    (click)="filterForm.controls.search.reset()"
+                >
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:x-mark'"
+                    ></mat-icon>
+                </button>
+            </mat-form-field> -->
+        </div>
+    </div>
+
+    <div class="flex-auto p-6 md:p-8">
+        <div *ngIf="loading" class="py-10 text-center">
+            <mat-progress-spinner
+                mode="indeterminate"
+                diameter="50"
+            ></mat-progress-spinner>
+            <p class="mt-4 text-lg font-medium">Loading Insights...</p>
+        </div>
+
+        <div
+            *ngIf="error"
+            class="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
+            role="alert"
+        >
+            <strong class="font-bold">Error!</strong>
+            <span class="block sm:inline">{{ error }}</span>
+        </div>
+
+        <div
+            *ngIf="!loading && !error && insights && viewMode === 'cards'"
+            class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+            <div
+                *ngIf="insights.financialHealth"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-2 lg:col-span-1"
+            >
+                <h2 class="mb-4 text-xl font-semibold">Financial Health</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Overall Score:</span
+                        >
+                        <span class="text-lg font-medium"
+                            >{{
+                                insights.financialHealth.financialScore
+                                    | number: '1.0-1'
+                            }}/10</span
+                        >
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Savings Rate:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.savingsRate
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Debt to Income Ratio:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.debtToIncomeRatio
+                                | number: '1.2-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Investment Ratio:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.investmentRatio
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Credit Utilization:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.creditUtilization
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Budget Adherence:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.monthlyBudgetAdherence
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Emergency Fund:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth?.emergencyFund?.balance
+                                | currency: 'INR' : 'symbol' : '1.2-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Months Covered:</span
+                        >
+                        <span class="text-lg font-medium"
+                            >{{
+                                insights.financialHealth?.emergencyFund
+                                    ?.monthsCovered ?? 'N/A'
+                            }}
+                            months</span
+                        >
+                    </div>
+                </div>
+                <div class="mt-4 h-[200px]" *ngIf="viewMode === 'charts'">
+                    <apx-chart
+                        [series]="financialHealthChartOptions.series"
+                        [chart]="financialHealthChartOptions.chart"
+                        [xaxis]="financialHealthChartOptions.xaxis"
+                        [yaxis]="financialHealthChartOptions.yaxis"
+                        [colors]="financialHealthChartOptions.colors"
+                        [plotOptions]="financialHealthChartOptions.plotOptions"
+                    ></apx-chart>
+                </div>
+            </div>
+
+            <div
+                *ngIf="insights.alerts && insights.alerts.length > 0"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-1 lg:col-span-2"
+            >
+                <h2
+                    class="mb-4 flex items-center text-xl font-semibold text-yellow-600"
+                >
+                    <mat-icon
+                        class="mr-2 text-yellow-500"
+                        [svgIcon]="'heroicons_outline:exclamation-triangle'"
+                    ></mat-icon>
+                    Alerts & Observations
+                </h2>
+                <ul class="space-y-3">
+                    <li
+                        *ngFor="let alert of insights.alerts"
+                        [ngClass]="{
+                            'border-l-4 border-red-400 bg-red-50 dark:bg-red-900/20':
+                                alert.severity === 'high',
+                            'border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20':
+                                alert.severity === 'medium',
+                            'border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-900/20':
+                                alert.severity === 'low',
+                        }"
+                        class="rounded-r py-2 pl-4"
+                    >
+                        <p class="font-medium">{{ alert.notes }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            On:
+                            <span class="font-semibold">{{
+                                alert.date_or_month
+                            }}</span>
+                            | Amount:
+                            <span class="font-semibold">{{
+                                alert.amount
+                                    | currency: 'INR' : 'symbol' : '1.2-2'
+                            }}</span>
+                            | Severity:
+                            <span class="font-semibold">{{
+                                alert.severity | titlecase
+                            }}</span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                *ngIf="
+                    insights.incomeVsExpenses &&
+                    insights.incomeVsExpenses.length > 0
+                "
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-2 lg:col-span-3"
+            >
+                <h2 class="mb-4 text-xl font-semibold">
+                    Income vs. Expenses Trend
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-2 font-medium">Month</th>
+                                <th class="px-4 py-2 text-right font-medium">
+                                    Income
+                                </th>
+                                <th class="px-4 py-2 text-right font-medium">
+                                    Expense
+                                </th>
+                                <th class="px-4 py-2 text-right font-medium">
+                                    Net Savings
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                *ngFor="let item of insights.incomeVsExpenses"
+                                class="border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
+                            >
+                                <td class="px-4 py-2">
+                                    {{ item.date_or_month | date: 'MMM yyyy' }}
+                                </td>
+                                <td class="px-4 py-2 text-right text-green-600">
+                                    {{
+                                        item.income
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.2-2'
+                                    }}
+                                </td>
+                                <td class="px-4 py-2 text-right text-red-600">
+                                    {{
+                                        item.expense
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.2-2'
+                                    }}
+                                </td>
+                                <td
+                                    class="px-4 py-2 text-right font-medium"
+                                    [ngClass]="{
+                                        'text-green-600': item.netSavings >= 0,
+                                        'text-red-600': item.netSavings < 0,
+                                    }"
+                                >
+                                    {{
+                                        item.netSavings
+                                            | currency
+                                                : 'INR'
+                                                : 'symbol'
+                                                : '1.2-2'
+                                    }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div
+                *ngIf="
+                    insights.monthlySpendSummaries &&
+                    insights.monthlySpendSummaries.length > 0
+                "
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-1"
+            >
+                <h2 class="mb-4 text-xl font-semibold">Monthly Spending</h2>
+                <ul class="max-h-96 space-y-2 overflow-y-auto pr-2">
+                    <li
+                        *ngFor="let summary of insights.monthlySpendSummaries"
+                        class="flex items-center justify-between border-b border-dashed py-1 last:border-b-0 dark:border-gray-700"
+                    >
+                        <span class="text-gray-700 dark:text-gray-300">{{
+                            summary.date_or_month | date: 'MMM yyyy'
+                        }}</span>
+                        <span class="font-medium">{{
+                            summary.amount
+                                | currency: 'INR' : 'symbol' : '1.2-2'
+                        }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                *ngIf="
+                    insights.savingsOpportunities &&
+                    insights.savingsOpportunities.length > 0
+                "
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-1"
+            >
+                <h2 class="mb-4 text-xl font-semibold">
+                    Top Spending Categories
+                </h2>
+                <ul class="space-y-2">
+                    <li
+                        *ngFor="
+                            let opportunity of insights.savingsOpportunities
+                        "
+                        class="flex items-center justify-between border-b border-dashed py-1 last:border-b-0 dark:border-gray-700"
+                    >
+                        <span class="text-gray-700 dark:text-gray-300">{{
+                            opportunity.category
+                        }}</span>
+                        <span class="font-medium">{{
+                            opportunity.amount
+                                | currency: 'INR' : 'symbol' : '1.2-2'
+                        }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                *ngIf="insights.spendingPatterns"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default md:col-span-1"
+            >
+                <h2 class="mb-4 text-xl font-semibold">Spending Patterns</h2>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div
+                        *ngIf="
+                            insights.spendingPatterns.byDay &&
+                            insights.spendingPatterns.byDay.length > 0
+                        "
+                    >
+                        <h3 class="mb-2 text-lg font-medium">
+                            Top Spending Days
+                        </h3>
+                        <ul class="space-y-1">
+                            <li
+                                *ngFor="
+                                    let day of insights.spendingPatterns.byDay
+                                "
+                                class="flex justify-between text-sm"
+                            >
+                                <span class="text-gray-600 dark:text-gray-400"
+                                    >{{ day.date_or_month }}:</span
+                                >
+                                <span class="font-medium">{{
+                                    day.amount
+                                        | currency: 'INR' : 'symbol' : '1.2-2'
+                                }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div
+                        *ngIf="
+                            insights.spendingPatterns.byHour &&
+                            insights.spendingPatterns.byHour.length > 0
+                        "
+                    >
+                        <h3 class="mb-2 text-lg font-medium">
+                            Top Spending Hours
+                        </h3>
+                        <ul class="space-y-1">
+                            <li
+                                *ngFor="
+                                    let hour of insights.spendingPatterns.byHour
+                                "
+                                class="flex justify-between text-sm"
+                            >
+                                <span class="text-gray-600 dark:text-gray-400"
+                                    >{{ hour.date_or_month }}:</span
+                                >
+                                <span class="font-medium">{{
+                                    hour.amount
+                                        | currency: 'INR' : 'symbol' : '1.2-2'
+                                }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                *ngIf="!loading && !hasInsights"
+                class="col-span-1 py-10 text-center text-gray-500 md:col-span-2 lg:col-span-3"
+            >
+                No financial insights available.
+            </div>
+        </div>
+
+        <div
+            *ngIf="!loading && !error && insights && viewMode === 'charts'"
+            class="grid grid-cols-1 gap-6 lg:grid-cols-2"
+        >
+            <div
+                *ngIf="insights.alerts && insights.alerts.length > 0"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default lg:col-span-2"
+            >
+                <h2
+                    class="mb-4 flex items-center text-xl font-semibold text-yellow-600"
+                >
+                    <mat-icon
+                        class="mr-2 text-yellow-500"
+                        [svgIcon]="'heroicons_outline:exclamation-triangle'"
+                    ></mat-icon>
+                    Alerts & Observations
+                </h2>
+                <ul class="space-y-3">
+                    <li
+                        *ngFor="let alert of insights.alerts"
+                        class="rounded-r border-l-4 border-yellow-400 bg-yellow-50 py-2 pl-4 dark:bg-gray-700"
+                    >
+                        <p class="font-medium">{{ alert.notes }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            On:
+                            <span class="font-semibold">{{
+                                alert.date_or_month
+                            }}</span>
+                            | Amount:
+                            <span class="font-semibold">{{
+                                alert.amount
+                                    | currency: 'INR' : 'symbol' : '1.2-2'
+                            }}</span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                *ngIf="insights.incomeVsExpenses?.length"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default lg:col-span-2"
+            >
+                <h2 class="mb-4 text-xl font-semibold">
+                    Income vs. Expenses Trend
+                </h2>
+                <div class="h-[400px]">
+                    <apx-chart
+                        [series]="incomeExpensesChartOptions.series"
+                        [chart]="incomeExpensesChartOptions.chart"
+                        [xaxis]="incomeExpensesChartOptions.xaxis"
+                        [yaxis]="incomeExpensesChartOptions.yaxis"
+                        [colors]="incomeExpensesChartOptions.colors"
+                        [legend]="incomeExpensesChartOptions.legend"
+                        [plotOptions]="incomeExpensesChartOptions.plotOptions"
+                        [dataLabels]="incomeExpensesChartOptions.dataLabels"
+                    ></apx-chart>
+                </div>
+            </div>
+
+            <div
+                *ngIf="insights.monthlySpendSummaries?.length"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default"
+            >
+                <h2 class="mb-4 text-xl font-semibold">
+                    Monthly Spending Trend
+                </h2>
+                <div class="h-[400px]">
+                    <apx-chart
+                        [series]="monthlySpendingChartOptions.series"
+                        [chart]="monthlySpendingChartOptions.chart"
+                        [xaxis]="monthlySpendingChartOptions.xaxis"
+                        [yaxis]="monthlySpendingChartOptions.yaxis"
+                        [colors]="monthlySpendingChartOptions.colors"
+                        [stroke]="monthlySpendingChartOptions.stroke"
+                        [markers]="monthlySpendingChartOptions.markers"
+                    ></apx-chart>
+                </div>
+            </div>
+
+            <div
+                *ngIf="insights.financialHealth"
+                class="bg-card col-span-1 rounded-lg p-6 shadow dark:bg-default"
+            >
+                <h2 class="mb-4 text-xl font-semibold">Financial Health</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Overall Score:</span
+                        >
+                        <span class="text-lg font-medium"
+                            >{{
+                                insights.financialHealth.financialScore
+                                    | number: '1.0-1'
+                            }}/10</span
+                        >
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Savings Rate:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.savingsRate
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Debt to Income Ratio:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.debtToIncomeRatio
+                                | number: '1.2-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Investment Ratio:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.investmentRatio
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Credit Utilization:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.creditUtilization
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Budget Adherence:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth.monthlyBudgetAdherence
+                                | percent: '1.0-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Emergency Fund:</span
+                        >
+                        <span class="text-lg font-medium">{{
+                            insights.financialHealth?.emergencyFund?.balance
+                                | currency: 'INR' : 'symbol' : '1.2-2'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400"
+                            >Months Covered:</span
+                        >
+                        <span class="text-lg font-medium"
+                            >{{
+                                insights.financialHealth?.emergencyFund
+                                    ?.monthsCovered ?? 'N/A'
+                            }}
+                            months</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            *ngIf="!loading && !hasInsights"
+            class="col-span-1 py-10 text-center text-gray-500 md:col-span-2 lg:col-span-3"
+        >
+            No financial insights available.
+        </div>
+    </div>
+</div>

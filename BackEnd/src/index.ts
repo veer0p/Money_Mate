@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
-import chatRoutes from "./routes/chatRoutes";
 import messageRouters from "./routes/messageRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
@@ -25,6 +24,18 @@ app.use(
 app.use(express.json({ limit: "50mb" })); // Increase JSON body limit
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Increase URL-encoded body limit
 
+// API Request Logging Middleware
+app.use((req, res, next) => {
+  const time = new Date().toLocaleTimeString();
+  console.log(`[${time}] ${req.method} ${req.url}`);
+  
+  res.on('finish', () => {
+    console.log(`[${time}] ${req.method} ${req.url} - ${res.statusCode}`);
+  });
+  
+  next();
+});
+
 app.get("/", (req, res) => {
   res.send("Server is Live 🚀");
 });
@@ -34,7 +45,6 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 // ✅ Load Routes AFTER enabling CORS
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRouters);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
