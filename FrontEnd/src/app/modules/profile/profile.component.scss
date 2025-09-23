@@ -30,10 +30,22 @@ mat-form-field {
 }
 
 button[mat-raised-button] {
-    background-color: #3b82f6;
-    color: #ffffff;
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
 }
 
 button[mat-button] {
-    color: #6b7280;
+    color: #6b7280 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+}
+
+.mat-mdc-button .mdc-button__label,
+.mat-mdc-raised-button .mdc-button__label {
+    color: inherit !important;
+    font-size: inherit !important;
 }

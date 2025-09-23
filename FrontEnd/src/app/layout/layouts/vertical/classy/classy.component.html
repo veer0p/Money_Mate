@@ -24,12 +24,12 @@
                         [src]="user.avatar"
                         alt="User avatar"
                     />
-                }
-                @if (!user?.avatar) {
-                    <mat-icon
-                        class="icon-size-24"
-                        [svgIcon]="'heroicons_solid:user-circle'"
-                    ></mat-icon>
+                } @else {
+                    <div class="h-full w-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-white text-lg font-bold">
+                            {{ user?.initials || 'U' }}
+                        </span>
+                    </div>
                 }
             </div>
             <div class="mt-6 flex w-full flex-col items-center justify-center">

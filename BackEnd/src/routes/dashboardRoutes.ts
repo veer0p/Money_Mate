@@ -5,6 +5,7 @@ import {
   getRecentTransactions,
   getTransactionDistribution,
   getTransactionTrend,
+  getAllTransactionsDebug,
 } from "../controllers/dashboardController";
 
 const router = Router();
@@ -20,5 +21,8 @@ router.get("/distribution/:user_id", getTransactionDistribution);
 
 // Route to get recent transactions (List: Recent Transactions)
 router.get("/recent/:user_id", getRecentTransactions);
+
+// Debug route to check all transactions
+router.get("/debug/:user_id", getAllTransactionsDebug);
 
 export default router;

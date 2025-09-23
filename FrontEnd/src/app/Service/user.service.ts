@@ -6,25 +6,27 @@ import { environment } from '../../environments/environment';
 
 interface User {
     id: string;
-    first_name: string;
-    last_name: string;
-    dob?: string;
     email: string;
-    phone_number?: string;
-    is_active: boolean;
-    is_verified: boolean;
-    is_email_verified: boolean;
+    balance: number;
     created_at: string;
+    updated_at: string;
+    first_name?: string;
+    last_name?: string;
+    dob?: string;
+    phone_number?: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+    is_email_verified?: boolean;
     last_login?: string;
-    role: string;
-    is_2fa_enabled: boolean;
+    role?: string;
+    is_2fa_enabled?: boolean;
     profile_image_url?: string;
-    account_balance: number;
 }
 
 interface ApiResponse<T> {
-    status: string;
     message: string;
+    user?: T;
+    balanceUpdated?: boolean;
     data?: T;
     error?: string;
 }
@@ -61,10 +63,10 @@ export class UserService {
     updateUserDetails(
         userId: string,
         updatedData: Partial<User>
-    ): Observable<ApiResponse<void>> {
+    ): Observable<ApiResponse<User>> {
         const url = `${this.BASE_URL}/user/update/${userId}`;
         console.log('Request URL:', url, 'Data:', updatedData);
-        return this.http.put<ApiResponse<void>>(url, updatedData).pipe(
+        return this.http.put<ApiResponse<User>>(url, updatedData).pipe(
             tap((response) => {
                 console.log('Update User Response:', response);
             }),

@@ -3,6 +3,7 @@ import {
   getUserDetails,
   updateUserDetails,
   uploadProfileImage,
+  updateUserBalance,
 } from "../controllers/userController";
 import multer from "multer";
 
@@ -21,5 +22,8 @@ router.post(
   upload.single("profileImage"),
   uploadProfileImage
 );
+
+// Update user balance
+router.post("/update-balance", updateUserBalance);
 
 export default router;

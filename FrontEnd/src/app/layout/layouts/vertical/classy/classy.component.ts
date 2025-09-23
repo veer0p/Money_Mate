@@ -14,6 +14,7 @@ import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { User } from 'app/core/user/user.types';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { UserUpdateService } from 'app/shared/services/user-update.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -43,7 +44,8 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService,
         private _userService: UserService, // Inject UserService
-        private _authService: AuthService // Inject AuthService
+        private _authService: AuthService, // Inject AuthService
+        private _userUpdateService: UserUpdateService
     ) {}
 
     get currentYear(): number {
@@ -68,15 +70,17 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe({
                     next: (response) => {
-                        const userData = response.data;
+                        const userData = response.user || response.data;
                         this.user = {
                             id: userData.id,
-                            name: `${userData.first_name} ${userData.last_name}`,
+                            name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'User',
                             email: userData.email,
-                            avatar:
-                                userData.profile_image_url ||
-                                'assets/images/default-profile.png',
+                            balance: userData.balance,
+                            avatar: userData.profile_image_url,
+                            initials: `${userData.first_name?.[0] || 'U'}${userData.last_name?.[0] || ''}`,
                             status: userData.is_active ? 'online' : 'offline',
+                            created_at: userData.created_at,
+                            updated_at: userData.updated_at,
                         };
                     },
                     error: (error) => {
@@ -86,7 +90,8 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
                             id: '1',
                             name: 'Unknown User',
                             email: 'unknown@company.com',
-                            avatar: 'assets/images/default-profile.png',
+                            avatar: null,
+                            initials: 'UU',
                             status: 'offline',
                         };
                     },
@@ -100,6 +105,18 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(({ matchingAliases }) => {
                 this.isScreenSmall = !matchingAliases.includes('md');
+            });
+
+        // Listen for user updates from profile component
+        this._userUpdateService.userUpdated$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((updatedUser) => {
+                this.user = {
+                    ...this.user,
+                    name: `${updatedUser.first_name || ''} ${updatedUser.last_name || ''}`.trim() || 'User',
+                    avatar: updatedUser.profile_image_url,
+                    initials: `${updatedUser.first_name?.[0] || 'U'}${updatedUser.last_name?.[0] || ''}`,
+                };
             });
     }
 

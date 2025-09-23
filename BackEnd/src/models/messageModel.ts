@@ -37,16 +37,15 @@ Message.init(
       allowNull: false,
       defaultValue: sequelize.literal("NOW()"),
     },
+    processed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     sequelize,
     modelName: "Message",
-    indexes: [
-      {
-        unique: true,
-        fields: ["user_id", "sender", "message_body"]
-      },
-    ],
+    tableName: "messages",
   }
 );
 

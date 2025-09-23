@@ -16,14 +16,19 @@
                     >
                         <!-- Profile Picture (Left) -->
                         <div class="relative">
-                            <img
-                                [src]="
-                                    user.profile_image_url ||
-                                    'assets/images/default-profile.png'
-                                "
-                                alt="Profile Image"
-                                class="h-32 w-32 rounded-full object-cover"
-                            />
+                            @if (user.profile_image_url) {
+                                <img
+                                    [src]="user.profile_image_url"
+                                    alt="Profile Image"
+                                    class="h-32 w-32 rounded-full object-cover"
+                                />
+                            } @else {
+                                <div class="h-32 w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                    <span class="text-white text-4xl font-bold">
+                                        {{ (user.first_name?.[0] || 'U') + (user.last_name?.[0] || '') }}
+                                    </span>
+                                </div>
+                            }
                             @if (isEditing) {
                                 <label
                                     for="profile-image-upload"
@@ -72,11 +77,11 @@
                                 >
                                     Account Balance:
                                     {{
-                                        user.account_balance
+                                        user.balance
                                             | currency
                                                 : 'INR'
                                                 : 'symbol'
-                                                : '1.0-0'
+                                                : '1.0-2'
                                     }}
                                 </p>
                             </div>
@@ -140,6 +145,21 @@
                                                 name="last_name"
                                                 required
                                             />
+                                        </mat-form-field>
+                                        <mat-form-field class="w-full">
+                                            <mat-label>Date of Birth</mat-label>
+                                            <input
+                                                matInput
+                                                [matDatepicker]="dobPicker"
+                                                [(ngModel)]="editedUser.dob"
+                                                name="dob"
+                                                readonly
+                                            />
+                                            <mat-datepicker-toggle
+                                                matIconSuffix
+                                                [for]="dobPicker"
+                                            ></mat-datepicker-toggle>
+                                            <mat-datepicker #dobPicker></mat-datepicker>
                                         </mat-form-field>
                                         <mat-form-field class="w-full">
                                             <mat-label>Phone Number</mat-label>

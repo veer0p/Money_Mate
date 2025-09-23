@@ -4,6 +4,7 @@ import User from "../models/userModel";
 import { v4 as uuidv4 } from "uuid";
 import { sequelize } from "../config/db";
 import { Parser } from "json2csv";
+import { PythonProcessor } from "../services/pythonProcessor";
 
 export const exportMessagesToCSV = async (
   req: Request,
@@ -114,18 +115,32 @@ export const storeMessage = async (
     // Insert messages in batches
     while (index < formattedMessages.length) {
       const batch = formattedMessages.slice(index, index + batchSize);
-      await Message.bulkCreate(batch, {
+      const createdMessages = await Message.bulkCreate(batch, {
         transaction,
         validate: false,
         hooks: false,
         ignoreDuplicates: true,
+        returning: true,
       });
+      
+      // Messages will be processed by Python service later
+      
       insertedCount += batch.length;
       index += batchSize;
       console.log(insertedCount);
     }
 
     await transaction.commit();
+
+    // Trigger Python processing automatically
+    try {
+      console.log("🚀 Auto-triggering Python processing...");
+      const processor = new PythonProcessor();
+      const result = await processor.processMessages();
+      console.log(`✅ Python processing completed: ${result.processed} processed, ${result.transactions} transactions`);
+    } catch (error) {
+      console.log('❌ Python processing failed:', error instanceof Error ? error.message : 'Unknown error');
+    }
 
     // Send final progress update
     res.write(

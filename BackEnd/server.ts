@@ -12,7 +12,7 @@ const startServer = async () => {
     await sequelize.authenticate(); // ✅ Ensure database connection is valid
     console.log("✅ Database connected successfully!");
 
-    await sequelize.sync({ alter: true }); // ✅ Sync models with database (use { force: true } to drop & recreate tables)
+    await sequelize.sync({ alter: false }); // ✅ Recreate tables based on models
     console.log("🔄 Database synchronized!");
 
     app.listen(PORT, "0.0.0.0", () => {

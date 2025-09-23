@@ -3,33 +3,37 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from 'app/Service/auth.service';
 import { UserService } from 'app/Service/user.service';
+import { UserUpdateService } from 'app/shared/services/user-update.service';
 import * as QRCode from 'qrcode'; // Import QRCode library
 import { Subject, takeUntil } from 'rxjs';
 
 interface User {
     id: string;
-    first_name: string;
-    last_name: string;
-    dob?: string;
     email: string;
-    phone_number?: string;
-    is_active: boolean;
-    is_verified: boolean;
-    is_email_verified: boolean;
+    balance: number;
     created_at: string;
+    updated_at: string;
+    first_name?: string;
+    last_name?: string;
+    dob?: string;
+    phone_number?: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+    is_email_verified?: boolean;
     last_login?: string;
-    role: string;
-    is_2fa_enabled: boolean;
+    role?: string;
+    is_2fa_enabled?: boolean;
     profile_image_url?: string;
-    account_balance: number;
 }
 
 @Component({
@@ -40,9 +44,11 @@ interface User {
     imports: [
         MatButtonModule,
         MatCardModule,
+        MatDatepickerModule,
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,
+        MatNativeDateModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
         MatDialogModule,
@@ -64,7 +70,8 @@ export class ProfileComponent implements OnInit {
     constructor(
         private userService: UserService,
         private authService: AuthService,
-        private snackBar: MatSnackBar
+        private snackBar: MatSnackBar,
+        private userUpdateService: UserUpdateService
     ) {}
 
     ngOnInit(): void {
@@ -93,7 +100,7 @@ export class ProfileComponent implements OnInit {
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
-                    this.user = response.data;
+                    this.user = response.user || response.data;
                     this.isLoading = false;
                 },
                 error: (error) => {
@@ -134,6 +141,8 @@ export class ProfileComponent implements OnInit {
                 first_name: this.user.first_name,
                 last_name: this.user.last_name,
                 phone_number: this.user.phone_number,
+                dob: this.user.dob,
+                profile_image_url: this.user.profile_image_url,
             };
         }
     }
@@ -142,11 +151,14 @@ export class ProfileComponent implements OnInit {
         if (!this.userId || !this.editedUser) return;
 
         this.isLoading = true;
+        
         this.userService
             .updateUserDetails(this.userId, this.editedUser)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: () => {
+                next: (response) => {
+                    this.user = response.user || response.data;
+                    this.userUpdateService.notifyUserUpdate(this.user);
                     this.snackBar.open(
                         'Profile updated successfully!',
                         'Close',
@@ -155,7 +167,7 @@ export class ProfileComponent implements OnInit {
                         }
                     );
                     this.isEditing = false;
-                    this.fetchUserDetails(); // Refresh user details
+                    this.isLoading = false;
                 },
                 error: (error) => {
                     console.error('Error updating user details:', error);
@@ -169,45 +181,20 @@ export class ProfileComponent implements OnInit {
 
     onProfileImageChange(event: Event): void {
         const input = event.target as HTMLInputElement;
-        if (input.files && input.files.length > 0 && this.userId) {
-            this.profileImageFile = input.files[0];
-            this.uploadProfileImage();
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64String = e.target?.result as string;
+                if (this.user) {
+                    this.user.profile_image_url = base64String;
+                }
+                // Store base64 in editedUser for saving
+                this.editedUser.profile_image_url = base64String;
+            };
+            reader.readAsDataURL(file);
         }
     }
 
-    uploadProfileImage(): void {
-        if (!this.userId || !this.profileImageFile) return;
 
-        this.isLoading = true;
-        this.userService
-            .uploadProfileImage(this.userId, this.profileImageFile)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: (response) => {
-                    if (this.user) {
-                        this.user.profile_image_url =
-                            response.data.profile_image_url;
-                    }
-                    this.snackBar.open(
-                        'Profile image updated successfully!',
-                        'Close',
-                        {
-                            duration: 3000,
-                        }
-                    );
-                    this.isLoading = false;
-                },
-                error: (error) => {
-                    console.error('Error uploading profile image:', error);
-                    this.snackBar.open(
-                        'Failed to upload profile image.',
-                        'Close',
-                        {
-                            duration: 3000,
-                        }
-                    );
-                    this.isLoading = false;
-                },
-            });
-    }
 }

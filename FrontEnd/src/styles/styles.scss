@@ -2,3 +2,81 @@
 /*  @ Import/write your custom styles here.
 /*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
 /* ----------------------------------------------------------------------------------------------------- */
+
+/* Ensure primary colors are applied correctly */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary {
+    --mdc-filled-button-container-color: var(--fuse-primary) !important;
+    --mdc-fab-container-color: var(--fuse-primary) !important;
+    background-color: var(--fuse-primary) !important;
+}
+
+.mat-mdc-button.mat-primary,
+.mat-mdc-outlined-button.mat-primary,
+.mat-mdc-icon-button.mat-primary {
+    --mdc-text-button-label-text-color: var(--fuse-primary) !important;
+    --mdc-outlined-button-label-text-color: var(--fuse-primary) !important;
+    --mdc-icon-button-icon-color: var(--fuse-primary) !important;
+    color: var(--fuse-primary) !important;
+}
+
+.mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+    border-color: var(--fuse-primary) !important;
+}
+
+.mat-mdc-progress-spinner .mdc-circular-progress__indeterminate-container circle {
+    stroke: var(--fuse-primary) !important;
+}
+
+/* Ensure checkbox primary color */
+.mat-mdc-checkbox.mat-primary {
+    --mdc-checkbox-selected-checkmark-color: var(--fuse-on-primary) !important;
+    --mdc-checkbox-selected-focus-icon-color: var(--fuse-primary) !important;
+    --mdc-checkbox-selected-hover-icon-color: var(--fuse-primary) !important;
+    --mdc-checkbox-selected-icon-color: var(--fuse-primary) !important;
+    --mdc-checkbox-selected-pressed-icon-color: var(--fuse-primary) !important;
+}
+
+/* Links with primary color */
+a.text-primary-500,
+.text-primary-500 {
+    color: var(--fuse-primary) !important;
+}
+
+/* Ensure all primary color variants work */
+.text-primary {
+    color: var(--fuse-primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--fuse-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--fuse-primary) !important;
+}
+
+/* Force primary colors on Material components */
+.mat-primary {
+    color: var(--fuse-primary) !important;
+}
+
+/* Loading bar primary color */
+fuse-loading-bar .mat-mdc-progress-bar {
+    --mdc-linear-progress-active-indicator-color: var(--fuse-primary) !important;
+}
+
+/* Form field focus colors */
+.mat-mdc-form-field.mat-focused.mat-primary .mat-mdc-text-field-wrapper {
+    border-color: var(--fuse-primary) !important;
+}
+
+/* Ensure theme-default class applies primary colors */
+.theme-default {
+    --fuse-primary: #4f46e5;
+    --fuse-primary-rgb: 79, 70, 229;
+    --fuse-on-primary: #ffffff;
+    --fuse-on-primary-rgb: 255, 255, 255;
+}

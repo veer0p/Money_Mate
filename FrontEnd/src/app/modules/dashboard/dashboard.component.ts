@@ -11,7 +11,7 @@ import { AuthService } from 'app/Service/auth.service';
 import { DashboardService } from 'app/Service/dashboard.service';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
-import { BaseChartDirective } from 'ng2-charts';
+
 import { Subject, takeUntil } from 'rxjs';
 
 interface DashboardSummary {
@@ -63,11 +63,10 @@ interface RecentTransaction {
         MatTooltipModule,
         MatProgressSpinnerModule,
         NgApexchartsModule,
-        // NgChartsModul,
     ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-    @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
 
     summary: DashboardSummary = {
         totalTransactions: 0,
@@ -113,18 +112,35 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         },
     };
 
-    public polarAreaChartOptions: ChartOptions<'polarArea'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-            },
+    chartTransactionDistribution: ApexOptions = {
+        chart: {
+            type: 'pie',
+            height: '100%',
+            width: '100%',
         },
+        series: [],
+        labels: [],
+        colors: [
+            '#3182CE', '#E53E3E', '#38A169', '#D69E2E', '#805AD5',
+            '#DD6B20', '#319795', '#C53030', '#2B6CB0', '#553C9A'
+        ],
+        legend: {
+            position: 'bottom',
+        },
+        responsive: [
+            {
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200,
+                    },
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+            },
+        ],
     };
-    public polarAreaChartLabels: string[] = [];
-    public polarAreaChartDatasets: ChartConfiguration<'polarArea'>['data']['datasets'] =
-        [{ data: [] }];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -145,9 +161,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        if (this.chart) {
-            this.chart.update();
-        }
+        // Chart will auto-render with ApexCharts
     }
 
     ngOnDestroy(): void {
@@ -373,23 +387,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         const amounts =
             this.transactionDistribution.amounts.length > 0
                 ? this.transactionDistribution.amounts
-                : [0];
+                : [100];
 
-        this.polarAreaChartLabels = categories;
-        this.polarAreaChartDatasets = [
-            {
-                data: amounts,
-                label: 'Transaction Amount by Category',
-                backgroundColor: ['#3182CE'],
-            },
-        ];
+        this.chartTransactionDistribution = {
+            ...this.chartTransactionDistribution,
+            series: amounts,
+            labels: categories,
+        };
 
-        console.log('Polar Area Chart Labels:', this.polarAreaChartLabels);
-        console.log('Polar Area Chart Datasets:', this.polarAreaChartDatasets);
-
-        if (this.chart) {
-            this.chart.update();
-        }
+        console.log('Pie Chart Data:', this.chartTransactionDistribution);
     }
 
     trackByFn(index: number, item: any): any {

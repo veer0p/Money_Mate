@@ -68,6 +68,14 @@ Transaction.init(
       allowNull: true,
       unique: true, // To prevent duplicate entries
     },
+    source_message_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: "messages",
+        key: "id",
+      },
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -16,6 +16,7 @@ import { provideIcons } from 'app/core/icons/icons.provider';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { ThemeService } from './core/theme/theme.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -77,6 +78,18 @@ export const appConfig: ApplicationConfig = {
                 const navigationService = inject(NavigationService);
                 return () => {
                     navigationService.loadNavigation();
+                    return Promise.resolve();
+                };
+            },
+            multi: true,
+        },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: () => {
+                const themeService = inject(ThemeService);
+                // Initialize theme service to ensure theme classes are applied
+                return () => {
+                    // The service constructor already handles theme application
                     return Promise.resolve();
                 };
             },

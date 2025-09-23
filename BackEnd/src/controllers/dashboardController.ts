@@ -104,26 +104,40 @@ export const getTransactionTrend = async (
       return;
     }
 
-    // Calculate the date range (last 12 months)
-    const endDate = new Date(); // Current date (March 28, 2025)
-    const startDate = new Date();
-    startDate.setMonth(endDate.getMonth() - 11); // Go back 12 months (April 2024)
-
-    // Fetch transactions within the date range
-    const transactions = await Transaction.findAll({
-      where: {
-        user_id,
-        transaction_date: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
+    // Get all transactions first to determine actual date range
+    const allTransactions = await Transaction.findAll({
+      where: { user_id },
+      order: [['transaction_date', 'ASC']]
     });
+
+    if (allTransactions.length === 0) {
+      res.status(200).json({
+        status: "success",
+        message: "No transactions found",
+        data: { series: [{ name: "Total Amount", data: [] }], labels: [] }
+      });
+      return;
+    }
+
+    // Use actual transaction date range instead of assuming current year
+    const actualEndDate = new Date(Math.max(...allTransactions.map(t => new Date(t.transaction_date).getTime())));
+    const actualStartDate = new Date(actualEndDate);
+    actualStartDate.setMonth(actualEndDate.getMonth() - 11);
+
+    console.log(`Transaction Trend - Actual date range: ${actualStartDate.toISOString()} to ${actualEndDate.toISOString()}`);
+
+    const transactions = allTransactions.filter(t => {
+      const tDate = new Date(t.transaction_date);
+      return tDate >= actualStartDate && tDate <= actualEndDate;
+    });
+
+    console.log(`Found ${transactions.length} transactions for trend analysis`);
 
     // Initialize the result arrays
     const labels: string[] = [];
     const amounts: number[] = [];
 
-    // Generate labels for the last 12 months (Apr'24 to Mar'25)
+    // Generate labels for the last 12 months
     const monthNames = [
       "Jan",
       "Feb",
@@ -138,10 +152,10 @@ export const getTransactionTrend = async (
       "Nov",
       "Dec",
     ];
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
+    let currentDate = new Date(actualStartDate);
+    while (currentDate <= actualEndDate) {
       const month = monthNames[currentDate.getMonth()];
-      const year = currentDate.getFullYear().toString().slice(-2); // e.g., "24" for 2024
+      const year = currentDate.getFullYear().toString().slice(-2);
       labels.push(`${month}'${year}`);
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
@@ -213,12 +227,30 @@ export const getTransactionDistribution = async (
       return;
     }
 
-    // Calculate the date range for the current week (Monday to Sunday)
-    const today = new Date();
-    let startOfWeek = new Date(today);
-    let endOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
-    endOfWeek.setDate(today.getDate() - today.getDay() + 7); // Sunday
+    // Get the most recent transaction date to base "current week" on
+    const latestTransaction = await Transaction.findOne({
+      where: { user_id },
+      order: [['transaction_date', 'DESC']]
+    });
+
+    if (!latestTransaction) {
+      res.status(200).json({
+        status: "success",
+        message: "No transactions found",
+        data: { categories: ["No Data"], amounts: [0], totalSpent: 0, totalReceived: 0, period: "No Data" }
+      });
+      return;
+    }
+
+    // Use the latest transaction date as reference instead of server time
+    const referenceDate = new Date(latestTransaction.transaction_date);
+    let startOfWeek = new Date(referenceDate);
+    let endOfWeek = new Date(referenceDate);
+    startOfWeek.setDate(referenceDate.getDate() - referenceDate.getDay() + 1);
+    endOfWeek.setDate(referenceDate.getDate() - referenceDate.getDay() + 7);
+    
+    console.log(`Distribution - Week range based on latest transaction: ${startOfWeek.toISOString()} to ${endOfWeek.toISOString()}`);
+    console.log(`Latest transaction date: ${latestTransaction.transaction_date.toISOString()}`);
 
     let transactions = await Transaction.findAll({
       where: {
@@ -264,9 +296,10 @@ export const getTransactionDistribution = async (
       `Found ${transactions.length} transactions for period ${periodLabel}`
     );
     console.log(
-      "Transactions:",
+      "Raw Transactions:",
       transactions.map((t) => ({
-        description: t.description,
+        id: t.id,
+        description: t.description?.substring(0, 50),
         amount: t.amount,
         category: t.category,
         transaction_type: t.transaction_type,
@@ -274,37 +307,53 @@ export const getTransactionDistribution = async (
       }))
     );
 
-    // Group transactions by category and calculate total amount
-    const categoryAmounts: { [key: string]: number } = {};
+    // Group transactions by category and transaction type
+    const debitCategoryAmounts: { [key: string]: number } = {};
+    const creditCategoryAmounts: { [key: string]: number } = {};
     let totalSpent = 0;
     let totalReceived = 0;
 
     transactions.forEach((transaction) => {
       const category = transaction.category || "Other";
-      if (!categoryAmounts[category]) {
-        categoryAmounts[category] = 0;
-      }
       const amount = Number(transaction.amount) || 0;
-      categoryAmounts[category] += amount;
+      const transactionType = transaction.transaction_type?.toLowerCase();
 
-      if (transaction.transaction_type === "debit") {
+      console.log(`Processing transaction: ${transaction.description?.substring(0, 30)} - Type: '${transaction.transaction_type}' - Amount: ${amount}`);
+
+      if (transactionType === "debit") {
+        if (!debitCategoryAmounts[category]) {
+          debitCategoryAmounts[category] = 0;
+        }
+        debitCategoryAmounts[category] += amount;
         totalSpent += amount;
-      } else if (transaction.transaction_type === "credit") {
+        console.log(`Added to DEBIT - Category: ${category}, Amount: ${amount}`);
+      } else if (transactionType === "credit") {
+        if (!creditCategoryAmounts[category]) {
+          creditCategoryAmounts[category] = 0;
+        }
+        creditCategoryAmounts[category] += amount;
         totalReceived += amount;
+        console.log(`Added to CREDIT - Category: ${category}, Amount: ${amount}`);
+      } else {
+        console.warn(`Unknown transaction type: '${transaction.transaction_type}' for transaction ${transaction.id}`);
       }
     });
 
-    console.log("Category amounts:", categoryAmounts);
+    console.log("Debit category amounts:", debitCategoryAmounts);
+    console.log("Credit category amounts:", creditCategoryAmounts);
+    console.log("Total Spent (calculated):", totalSpent);
+    console.log("Total Received (calculated):", totalReceived);
 
-    // Ensure at least one category if there are transactions
-    const categories =
-      Object.keys(categoryAmounts).length > 0
-        ? Object.keys(categoryAmounts)
-        : ["Other"];
-    const amounts =
-      Object.keys(categoryAmounts).length > 0
-        ? Object.values(categoryAmounts)
-        : [0];
+    // Combine categories for pie chart (showing only debit transactions for spending analysis)
+    const categories = Object.keys(debitCategoryAmounts).length > 0
+      ? Object.keys(debitCategoryAmounts)
+      : ["No Spending"];
+    const amounts = Object.keys(debitCategoryAmounts).length > 0
+      ? Object.values(debitCategoryAmounts)
+      : [0];
+
+    console.log("Final categories for pie chart:", categories);
+    console.log("Final amounts for pie chart:", amounts);
 
     res.status(200).json({
       status: "success",
@@ -325,6 +374,47 @@ export const getTransactionDistribution = async (
     });
   }
 };
+// Debug endpoint to check all transactions in database
+export const getAllTransactionsDebug = async (
+  req: Request<{ user_id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { user_id } = req.params;
+
+    const transactions = await Transaction.findAll({
+      where: { user_id },
+      order: [['transaction_date', 'DESC']],
+      limit: 20
+    });
+
+    console.log(`Debug: Found ${transactions.length} total transactions for user ${user_id}`);
+    transactions.forEach((t, i) => {
+      console.log(`${i + 1}. ${t.transaction_date.toISOString()} - ${t.description?.substring(0, 30)} - ${t.amount}`);
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "All transactions retrieved for debugging",
+      data: transactions.map(t => ({
+        id: t.id,
+        description: t.description,
+        amount: t.amount,
+        transaction_date: t.transaction_date.toISOString(),
+        category: t.category,
+        transaction_type: t.transaction_type
+      }))
+    });
+  } catch (error) {
+    console.error("Error in debug endpoint:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
+};
+
 // Get recent transactions for today
 export const getRecentTransactions = async (
   req: Request<{ user_id: string }>,
@@ -351,14 +441,30 @@ export const getRecentTransactions = async (
       return;
     }
 
-    // Calculate the date range for today
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    // Get the most recent transaction date to determine "today"
+    const latestTransaction = await Transaction.findOne({
+      where: { user_id },
+      order: [['transaction_date', 'DESC']]
+    });
+
+    if (!latestTransaction) {
+      res.status(200).json({
+        status: "success",
+        message: "No transactions found",
+        data: [],
+        period: "No Data"
+      });
+      return;
+    }
+
+    const referenceDate = new Date(latestTransaction.transaction_date);
+    const startOfDay = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate(), 23, 59, 59, 999);
 
     console.log(
-      `Fetching transactions for user ${user_id} on ${startOfDay} to ${endOfDay}`
+      `Fetching transactions for latest transaction date ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`
     );
+    console.log(`Latest transaction: ${latestTransaction.transaction_date.toISOString()}`);
 
     // Fetch transactions for today
     let transactions = await Transaction.findAll({
