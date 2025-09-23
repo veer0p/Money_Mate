@@ -34,31 +34,73 @@ router.post("/transactions/bulk-create", async (req, res) => {
   try {
     const { transactions, processedMessageIds } = req.body;
     
+    console.log(`Bulk-create request: ${transactions?.length || 0} transactions, ${processedMessageIds?.length || 0} messages`);
+    
     const transaction = await sequelize.transaction();
     
+    let transactionsWithIds: any[] = [];
+    
     try {
-      // Create transactions
+      // Create transactions (duplicates already filtered by Python)
       if (transactions && transactions.length > 0) {
-        await Transaction.bulkCreate(transactions, { 
-          transaction,
-          ignoreDuplicates: true,
-          validate: false
-        });
+        // Filter out transactions with existing reference_ids
+        const referenceIds = transactions
+          .map((txn: any) => txn.reference_id)
+          .filter((id: any) => id !== null && id !== undefined);
+        
+        let existingRefIds = new Set();
+        
+        if (referenceIds.length > 0) {
+          const existingTransactions = await Transaction.findAll({
+            where: { reference_id: referenceIds },
+            attributes: ['reference_id'],
+            transaction
+          });
+          existingRefIds = new Set(existingTransactions.map(t => t.reference_id));
+        }
+        
+        // Add UUID and validate transaction data before insertion
+        transactionsWithIds = transactions
+          .filter((txn: any) => !txn.reference_id || !existingRefIds.has(txn.reference_id))
+          .map((txn: any) => {
+            if (!txn.user_id || !txn.amount || !txn.transaction_type || !txn.transaction_date) {
+              throw new Error(`Invalid transaction data: ${JSON.stringify(txn)}`);
+            }
+            const now = new Date();
+            return {
+              ...txn,
+              id: require('uuid').v4(),
+              created_at: now,
+              updated_at: now
+            };
+          });
+        
+        if (transactionsWithIds.length > 0) {
+          await Transaction.bulkCreate(transactionsWithIds, { 
+            transaction,
+            validate: true,
+            ignoreDuplicates: true
+          });
+        }
+        
+        const duplicatesFiltered = transactions.length - transactionsWithIds.length;
+        console.log(`Created ${transactionsWithIds.length} transactions, filtered ${duplicatesFiltered} duplicates`);
       }
       
       // Mark messages as processed
       if (processedMessageIds && processedMessageIds.length > 0) {
-        await Message.update(
+        const updateResult = await Message.update(
           { processed: true },
           { where: { id: processedMessageIds }, transaction }
         );
+        console.log(`Marked ${updateResult[0]} messages as processed`);
       }
       
       await transaction.commit();
       
       res.json({
         success: true,
-        transactionsCreated: transactions ? transactions.length : 0,
+        transactionsCreated: transactionsWithIds.length,
         messagesProcessed: processedMessageIds ? processedMessageIds.length : 0
       });
     } catch (error) {
@@ -67,7 +109,7 @@ router.post("/transactions/bulk-create", async (req, res) => {
     }
   } catch (error) {
     console.error("Error in bulk-create:", error);
-    console.error("Request body:", JSON.stringify(req.body, null, 2));
+    console.error("Request body sample:", JSON.stringify(req.body?.transactions?.[0], null, 2));
     res.status(500).json({ 
       error: "Failed to create transactions",
       details: error instanceof Error ? error.message : 'Unknown error'

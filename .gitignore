@@ -1,6 +1,100 @@
+# Dependencies
+node_modules/
 /BackEnd/node_modules
-BackEnd/.env
+/FrontEnd/node_modules
 /ml/expense_tracking/node_modules
 /ml/spending_pattern/node_modules
-/node_modules
-/venv
+
+# Environment files
+.env
+.env.local
+.env.production
+BackEnd/.env
+
+# Build outputs
+/dist
+/build
+/out
+/tmp
+/out-tsc
+/bazel-out
+BackEnd/dist/
+FrontEnd/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+BackEnd/logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Angular cache
+.angular/
+FrontEnd/.angular/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Uploads and user content
+BackEnd/uploads/
+uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Lock files (optional - some prefer to commit these)
+package-lock.json
+yarn.lock

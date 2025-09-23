@@ -45,6 +45,38 @@ export const exportMessagesToCSV = async (
   }
 };
 
+export const getLastSyncTime = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { user_id } = req.query;
+
+    if (!user_id) {
+      res.status(400).json({ message: "User ID is required." });
+      return;
+    }
+
+    // Get the latest message creation time for this user
+    const latestMessage = await Message.findOne({
+      where: { user_id },
+      order: [["received_at", "DESC"]],
+      attributes: ["received_at"],
+    });
+
+    const lastSyncTime = latestMessage
+      ? (latestMessage as any).received_at
+      : null;
+
+    res.status(200).json({
+      lastSyncTime: lastSyncTime ? lastSyncTime.toISOString() : null,
+    });
+  } catch (error) {
+    console.error("Error getting last sync time:", error);
+    res.status(500).json({ message: "Failed to get last sync time.", error });
+  }
+};
+
 export const storeMessage = async (
   req: Request,
   res: Response
@@ -122,9 +154,9 @@ export const storeMessage = async (
         ignoreDuplicates: true,
         returning: true,
       });
-      
+
       // Messages will be processed by Python service later
-      
+
       insertedCount += batch.length;
       index += batchSize;
       console.log(insertedCount);
@@ -137,9 +169,14 @@ export const storeMessage = async (
       console.log("🚀 Auto-triggering Python processing...");
       const processor = new PythonProcessor();
       const result = await processor.processMessages();
-      console.log(`✅ Python processing completed: ${result.processed} processed, ${result.transactions} transactions`);
+      console.log(
+        `✅ Python processing completed: ${result.processed} processed, ${result.transactions} transactions`
+      );
     } catch (error) {
-      console.log('❌ Python processing failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.log(
+        "❌ Python processing failed:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Send final progress update

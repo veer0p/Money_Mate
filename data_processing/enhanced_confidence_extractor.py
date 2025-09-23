@@ -1,4 +1,5 @@
 import re
+import hashlib
 from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
@@ -12,21 +13,55 @@ class MessageType(Enum):
 
 class EnhancedConfidenceExtractor:
     def __init__(self):
-        self.credit_keywords = ['credited', 'received', 'deposited', 'refund', 'cashback']
-        self.debit_keywords = ['debited', 'transferred', 'paid', 'withdrawn', 'purchase']
-        self.bank_keywords = ['account', 'upi', 'neft', 'rtgs', 'bank', 'atm', 'a/c']
+        self.credit_keywords = ['credited', 'received', 'deposited', 'refund', 'cashback', 'cr.', 'cr ', 'credit', 'added', 'received from', 'deposit', 'reversal', 'interest credited']
+        self.debit_keywords = ['debited', 'transferred', 'paid', 'withdrawn', 'purchase', 'dr.', 'dr ', 'debit', 'spent', 'charged', 'deducted', 'sent to', 'payment', 'withdrawal']
+        self.bank_keywords = ['account', 'upi', 'neft', 'rtgs', 'bank', 'atm', 'a/c', 'imps', 'wallet', 'card', 'pos', 'online', 'mobile banking', 'net banking', 'fund transfer', 'transaction', 'txn']
         
-        # Real message patterns from CSV analysis
-        self.bank_senders = ['bobsms', 'bobtxn', 'icicit', 'hdfcmf']
-        self.telecom_senders = ['jiopay', 'jiocpn', 'vicare']
+        # Comprehensive bank sender patterns
+        self.bank_senders = ['bobsms', 'bobtxn', 'icicit', 'hdfcmf', 'sbi', 'hdfc', 'axis', 'kotak', 'pnb', 'canara', 'union', 'indian', 'federal', 'yes', 'rbl', 'idfc', 'indusind', 'paytm', 'phonepe', 'gpay', 'amazonpay', 'mobikwik']
+        self.telecom_senders = ['jiopay', 'jiocpn', 'vicare', 'airtel', 'vodafone', 'bsnl', 'mtnl']
         
     def classify_message(self, message_body: str, sender: str = "") -> MessageType:
         """Enhanced classification using sender and content"""
         message = message_body.lower()
         sender_lower = sender.lower()
         
-        # Security alerts - highest priority
-        if any(keyword in message for keyword in ['never share', 'fraud', 'suspicious', 'block', 'not you? call']):
+        # Filter out promotional/spam messages first
+        spam_indicators = [
+            'loan is ready', 'apply now', 'click here', 'http://', 'https://', 
+            'limited time offer', 'congratulations', 'winner', 'prize',
+            'otp to apply', 'finance hero', 'finance guru', 'loan approved', 'pre-approved',
+            'instant loan', 'personal loan', 'credit card offer', 'cashback offer',
+            'download app', 'register now', 'claim now', 'hurry up', 'use your otp',
+            'ready to be credited', 'loan offer', 'eligible for', 'apply for loan',
+            'click to check', 'purchase request', 'transaction id:',
+            'nav of rs', 'dear investor', 'dear consumer', 'finserv', 'mutual fund',
+            'has requested money through', 'on approval', 'will be debited from your bank account',
+            'payout for redemption', 'folio', 'growth option', 'amount will be credited to your bank',
+            'just credited:', 'in your wallet', 'redeem your exclusive', 'bwkoof.com',
+            'cupid cash', 'bewakoof', 'prepaid recharges has requested', 'irctc cf has requested'
+        ]
+        
+        if any(spam_word in message for spam_word in spam_indicators):
+            return MessageType.PROMOTIONAL
+        
+        # Check for promotional senders
+        promotional_senders = ['finance hero', 'loan', 'offer', 'promo', 'marketing', 'credit']
+        if any(promo in sender_lower for promo in promotional_senders):
+            return MessageType.PROMOTIONAL
+        
+        # Check for transaction (higher priority than security alerts for bank messages)
+        has_action = any(keyword in message for keyword in self.credit_keywords + self.debit_keywords)
+        has_bank_context = (any(keyword in message for keyword in self.bank_keywords) or
+                           any(sender_part in sender_lower for sender_part in self.bank_senders))
+        has_amount = bool(re.search(r'rs\.?\s*\d+|inr\s*\d+', message, re.IGNORECASE))
+        
+        # Only classify as transaction if it's from legitimate bank sources
+        if has_action and has_bank_context and has_amount:
+            return MessageType.TRANSACTION
+        
+        # Security alerts - but not if it's clearly a transaction
+        if any(keyword in message for keyword in ['never share', 'fraud', 'suspicious', 'block']) and not (has_action and has_amount):
             return MessageType.SECURITY_ALERT
             
         # OTP messages
@@ -43,16 +78,33 @@ class EnhancedConfidenceExtractor:
         if any(keyword in message for keyword in ['offer', 'discount', 'sale', 'click', 'download', 'coupon']):
             return MessageType.PROMOTIONAL
             
-        # Transaction messages (enhanced with sender info)
-        has_action = any(keyword in message for keyword in self.credit_keywords + self.debit_keywords)
-        has_bank_context = (any(keyword in message for keyword in self.bank_keywords) or
-                           any(sender_part in sender_lower for sender_part in self.bank_senders))
-        has_amount = bool(re.search(r'rs\.?\s*\d+|₹\s*\d+|inr\s*\d+', message, re.IGNORECASE))
-        
-        if has_action and has_bank_context and has_amount:
-            return MessageType.TRANSACTION
+        # This check was moved up above security alerts
             
         return MessageType.OTHER
+    
+    def generate_transaction_fingerprint(self, message_body: str, sender: str = "") -> str:
+        """Generate a fingerprint for duplicate detection"""
+        message = message_body.lower()
+        
+        # Extract key components for fingerprint
+        amount_match = re.search(r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)', message)
+        amount = amount_match.group(1).replace(',', '') if amount_match else ''
+        
+        account_match = re.search(r'a/c[:\s]*\.{3}(\d{4})', message)
+        account = account_match.group(1) if account_match else ''
+        
+        # Handle both 'by' and 'from:' patterns - extract actual sender name
+        sender_match = re.search(r'(?:by\s+(\w+)|from:(\w+))', message)
+        sender_name = sender_match.group(1) or sender_match.group(2) if sender_match else ''
+        
+        # Extract full timestamp for exact duplicate detection
+        timestamp_match = re.search(r'\((\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}:\d{2})\)', message)
+        timestamp = timestamp_match.group(1) if timestamp_match else ''
+        
+        transaction_type = 'credit' if 'credited' in message else 'debit' if any(word in message for word in ['debited', 'transferred']) else ''
+        
+        # Create fingerprint with exact timestamp to prevent same-time duplicates
+        return f"{amount}_{account}_{sender_name}_{transaction_type}_{timestamp}"
     
     def extract_with_confidence(self, message_body: str, sender: str = "") -> Dict:
         """Extract transaction data using 4 enhanced methods"""
@@ -96,33 +148,56 @@ class EnhancedConfidenceExtractor:
             'account_number': final_account or 'unknown',
             'confidence': confidence,
             'extractor_results': extractors,
-            'reference_id': self._extract_reference(message_body)
+            'reference_id': self._extract_reference(message_body),
+            'transaction_fingerprint': self.generate_transaction_fingerprint(message_body, sender)
         }
     
     def _enhanced_regex_extractor(self, message: str) -> Dict:
         """Enhanced regex using real CSV message patterns"""
         result = {'amount': None, 'type': None, 'account': None, 'confidence': 0}
         
-        # Credit patterns from real messages
+        # BOB-specific pattern first (highest priority)
+        bob_credit_match = re.search(r'credited with\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+on', message, re.IGNORECASE)
+        if bob_credit_match:
+            result['amount'] = float(bob_credit_match.group(1).replace(',', ''))
+            result['type'] = 'credit'
+            result['confidence'] = 98
+            return result
+        
+        # Other credit patterns
         credit_patterns = [
-            r'rs\.?(\d+(?:,\d+)*(?:\.\d{2})?)\s+credited',      # Rs.6000 Credited
-            r'credited.*?rs\.?(\d+(?:,\d+)*(?:\.\d{2})?)',       # credited with Rs.1000
-            r'credited.*?inr\s+(\d+(?:,\d+)*(?:\.\d{2})?)',     # credited with INR 130.00
-            r'account is credited.*?(\d+(?:,\d+)*(?:\.\d{2})?)', # account is credited with 1000.00
+            r'credited with inr\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)',  # credited with INR 1000.00
+            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+credited',      # Rs.6000 Credited
+            r'credited.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',       # credited with Rs.1000
+            r'credited.*?inr\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)',     # credited with INR 130.00
+            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+cr\.',          # Rs.100.00 Cr.
+            r'received.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',      # received Rs.500
+            r'deposited.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',     # deposited Rs.1000
+            r'refund.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',       # refund Rs.250
+            r'cashback.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',     # cashback Rs.50
+            r'added.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',        # added Rs.1000
         ]
         
-        # Debit patterns from real messages  
+        # Comprehensive debit patterns
         debit_patterns = [
-            r'rs\s+(\d+(?:,\d+)*(?:\.\d{2})?)\s+debited',       # Rs 40.00 debited
-            r'rs\.?(\d+(?:,\d+)*(?:\.\d{2})?)\s+transferred',   # Rs.527 transferred
-            r'debited.*?rs\s+(\d+(?:,\d+)*(?:\.\d{2})?)',       # debited Rs 40.00
+            r'rs\.?(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+dr\.',          # Rs.230.00 Dr.
+            r'rs\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+debited',       # Rs 40.00 debited
+            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+transferred',   # Rs.527 transferred
+            r'debited.*?rs\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)',       # debited Rs 40.00
+            r'withdrawn.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',    # withdrawn Rs.500
+            r'paid.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',        # paid Rs.1000
+            r'purchase.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',    # purchase Rs.250
+            r'charged.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',     # charged Rs.100
+            r'deducted.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',    # deducted Rs.50
+            r'spent.*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',       # spent Rs.300
         ]
         
         # Try credit patterns
         for pattern in credit_patterns:
             match = re.search(pattern, message, re.IGNORECASE)
             if match:
-                result['amount'] = float(match.group(1).replace(',', ''))
+                amount = float(match.group(1).replace(',', ''))
+                result['amount'] = amount
                 result['type'] = 'credit'
                 result['confidence'] = 95
                 break
@@ -132,10 +207,13 @@ class EnhancedConfidenceExtractor:
             for pattern in debit_patterns:
                 match = re.search(pattern, message, re.IGNORECASE)
                 if match:
-                    result['amount'] = float(match.group(1).replace(',', ''))
-                    result['type'] = 'debit'
-                    result['confidence'] = 95
-                    break
+                    amount = float(match.group(1).replace(',', ''))
+                    # Skip if this is a balance amount
+                    if not self._is_balance_amount(message, match.start(), match.end()):
+                        result['amount'] = amount
+                        result['type'] = 'debit'
+                        result['confidence'] = 95
+                        break
         
         # Enhanced account extraction
         account_patterns = [
@@ -166,19 +244,41 @@ class EnhancedConfidenceExtractor:
         elif debit_score > credit_score:
             result['type'] = 'debit'
         
-        # Enhanced amount extraction prioritizing transaction amounts
+        # BOB-specific pattern first (highest priority)
+        bob_match = re.search(r'credited with\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+on', message, re.IGNORECASE)
+        if bob_match:
+            result['amount'] = float(bob_match.group(1).replace(',', ''))
+            result['confidence'] = 95
+            return result
+        
+        # Other amount extraction patterns
         amount_patterns = [
-            r'(?:credited|debited|transferred).*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?).*?(?:credited|debited|transferred)',
-            r'inr\s+(\d+(?:,\d+)*(?:\.\d{2})?)',
+            # INR patterns
+            r'credited with inr\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)',  # credited with INR 1000.00
+            r'debited.*?inr\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)',     # debited INR 500.00
+            
+            # Dr./Cr. patterns
+            r'rs\.?(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+dr\.',          # Rs.230.00 Dr.
+            r'rs\.?(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+cr\.',          # Rs.100.00 Cr.
+            
+            # Main transaction patterns
+            r'rs\s+(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+debited from a/c.*?and credited',  # Main debit
+            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)\s+(?:credited|debited|transferred|withdrawn|paid|charged|received|deposited)',
+            
+            # Generic patterns
+            r'(?:credited|debited|transferred|withdrawn|paid|charged|received|deposited|dr\.|cr\.|refund|cashback).*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?)',
+            r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{1,2})?).*?(?:credited|debited|transferred|withdrawn|paid|charged|received|deposited|dr\.|cr\.|refund|cashback)',
         ]
         
         for pattern in amount_patterns:
             match = re.search(pattern, message, re.IGNORECASE)
             if match:
-                result['amount'] = float(match.group(1).replace(',', ''))
-                result['confidence'] = 80
-                break
+                amount = float(match.group(1).replace(',', ''))
+                # Skip if this looks like a balance amount (check for balance keywords nearby)
+                if not self._is_balance_amount(message, match.start(), match.end()):
+                    result['amount'] = amount
+                    result['confidence'] = 80
+                    break
                 
         return result
     
@@ -224,11 +324,16 @@ class EnhancedConfidenceExtractor:
         """Enhanced context-based extraction using sender info"""
         result = {'amount': None, 'type': None, 'account': None, 'confidence': 0}
         
-        # Bank-specific patterns based on real messages
+        # Bank-specific patterns based on real messages - more specific patterns
         bank_patterns = {
             'bob': {
-                'credit': r'rs\.?(\d+(?:,\d+)*(?:\.\d{2})?)\s+credited.*?bank of baroda',
-                'debit': r'rs\s+(\d+(?:,\d+)*(?:\.\d{2})?)\s+debited.*?-bob'
+                'credit': [
+                    r'credited with inr\s+(\d+(?:,\d+)*(?:\.\d{2})?)',  # credited with INR 1000.00
+                    r'rs\.?(\d+(?:,\d+)*(?:\.\d{2})?)\s+credited.*?bank of baroda'
+                ],
+                'debit': [
+                    r'rs\s+(\d+(?:,\d+)*(?:\.\d{2})?)\s+debited.*?-bob'
+                ]
             }
         }
         
@@ -243,37 +348,46 @@ class EnhancedConfidenceExtractor:
         if bank_identified and bank_identified in bank_patterns:
             patterns = bank_patterns[bank_identified]
             
-            for trans_type, pattern in patterns.items():
-                match = re.search(pattern, message, re.IGNORECASE)
-                if match:
-                    result['amount'] = float(match.group(1).replace(',', ''))
-                    result['type'] = trans_type
-                    result['confidence'] = 90
+            for trans_type, pattern_list in patterns.items():
+                for pattern in pattern_list:
+                    match = re.search(pattern, message, re.IGNORECASE)
+                    if match:
+                        result['amount'] = float(match.group(1).replace(',', ''))
+                        result['type'] = trans_type
+                        result['confidence'] = 90
+                        break
+                if result['amount']:  # Break outer loop if found
                     break
         
-        # Fallback to general context patterns
+        # Fallback to general context patterns - prioritize transaction amounts
         if not result['amount']:
-            context_patterns = [
-                (r'total bal:rs\.(\d+(?:,\d+)*(?:\.\d{2})?)', 'balance_indicator'),
-                (r'avlbl amt:rs\.(\d+(?:,\d+)*(?:\.\d{2})?)', 'available_indicator'),
+            # Look for transaction amount with specific context
+            transaction_patterns = [
+                r'credited with inr\s+(\d+(?:,\d+)*(?:\.\d{2})?)',  # credited with INR amount
+                r'(?:credited|debited).*?rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # credited/debited Rs amount
+                r'rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?).*?(?:credited|debited)',  # Rs amount credited/debited
             ]
             
-            # Look for transaction amount before balance indicators
-            transaction_match = re.search(r'rs\.?(\d+(?:,\d+)*(?:\.\d{2})?).*?(?:credited|debited|transferred)', message, re.IGNORECASE)
-            if transaction_match:
-                result['amount'] = float(transaction_match.group(1).replace(',', ''))
-                
-                if 'credited' in message.lower():
-                    result['type'] = 'credit'
-                elif any(word in message.lower() for word in ['debited', 'transferred']):
-                    result['type'] = 'debit'
-                
-                result['confidence'] = 85
+            for pattern in transaction_patterns:
+                match = re.search(pattern, message, re.IGNORECASE)
+                if match:
+                    amount = float(match.group(1).replace(',', ''))
+                    # Skip if this looks like a balance amount
+                    if not self._is_balance_amount(message, match.start(), match.end()):
+                        result['amount'] = amount
+                        
+                        if 'credited' in message.lower():
+                            result['type'] = 'credit'
+                        elif any(word in message.lower() for word in ['debited', 'transferred']):
+                            result['type'] = 'debit'
+                        
+                        result['confidence'] = 85
+                        break
                 
         return result
     
     def _get_consensus(self, values: List) -> Optional[str]:
-        """Get most common value from extractors"""
+        """Get most common value from extractors with smart prioritization"""
         if not values:
             return None
         
@@ -282,8 +396,21 @@ class EnhancedConfidenceExtractor:
         for value in values:
             counts[value] = counts.get(value, 0) + 1
         
-        # Return most common
-        return max(counts.items(), key=lambda x: x[1])[0] if counts else None
+        if not counts:
+            return None
+            
+        # Find max count
+        max_count = max(counts.values())
+        
+        # Get all values with max count
+        top_values = [value for value, count in counts.items() if count == max_count]
+        
+        # If tie, prefer larger amounts (likely main transaction vs fees)
+        if len(top_values) > 1 and all(isinstance(v, (int, float)) for v in top_values):
+            return max(top_values)
+        
+        # Otherwise return the most common
+        return top_values[0]
     
     def _calculate_confidence(self, extractors: List[Dict], final_amount: float, final_type: str) -> int:
         """Enhanced confidence calculation"""
@@ -350,3 +477,16 @@ class EnhancedConfidenceExtractor:
                 return match.group(1)
         
         return None
+    
+    def _is_balance_amount(self, message: str, start_pos: int, end_pos: int) -> bool:
+        """Check if the amount at given position is likely a balance amount"""
+        # Extract text around the amount (50 characters before and after)
+        context_start = max(0, start_pos - 50)
+        context_end = min(len(message), end_pos + 50)
+        context = message[context_start:context_end].lower()
+        
+        # Balance indicators that appear close to amounts
+        balance_keywords = ['avlbal', 'avl bal', 'available bal', 'total bal', 'current bal', 'remaining bal', 'wallet bal', 'closing bal', 'bal:', 'balance']
+        
+        # Check if any balance keyword is very close to the amount (within 50 chars)
+        return any(keyword in context for keyword in balance_keywords)

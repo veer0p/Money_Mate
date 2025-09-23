@@ -38,17 +38,26 @@ class TransactionExtractor:
         confidence_level = "HIGH" if result['confidence'] >= self.HIGH_CONFIDENCE else "MEDIUM"
         print(f"[{confidence_level} CONFIDENCE: {result['confidence']}%] Processing transaction: Rs.{result['amount']}")
         
+        # Convert timestamp to proper format
+        transaction_date = message['received_at']
+        if isinstance(transaction_date, str):
+            # If it's ISO string, convert to datetime
+            try:
+                from datetime import datetime
+                transaction_date = datetime.fromisoformat(transaction_date.replace('Z', '+00:00'))
+            except:
+                transaction_date = datetime.now()
+        
         return {
             'user_id': message['user_id'],
             'source_message_id': message['id'],
-            'account_number': result['account_number'],
+            'account_number': str(result['account_number']) if result['account_number'] else 'unknown',
             'transaction_type': result['transaction_type'],
-            'amount': result['amount'],
+            'amount': float(result['amount']),
             'currency': 'INR',
-            'transaction_date': message['received_at'],
-            'description': message_body[:200],
-            'reference_id': result['reference_id'],
-            'confidence_score': result['confidence']  # Store confidence for monitoring
+            'transaction_date': transaction_date.isoformat() if hasattr(transaction_date, 'isoformat') else str(transaction_date),
+            'description': message_body[:200] if message_body else '',
+            'reference_id': result['reference_id'] if result['reference_id'] else None
         }
     
     def process_single_message(self, message: Dict) -> bool:
@@ -79,7 +88,17 @@ class TransactionExtractor:
                 'transactions': transactions,
                 'processedMessageIds': processed_message_ids
             }
+            
+            # Log sample transaction for debugging
+            if transactions:
+                print(f"Sample transaction: {transactions[0]}")
+            
             response = requests.post(f"{self.api_base_url}/processing/transactions/bulk-create", json=payload)
+            
+            if response.status_code != 200:
+                print(f"Server error response: {response.status_code}")
+                print(f"Response body: {response.text}")
+            
             response.raise_for_status()
             
             if transactions:
@@ -88,8 +107,14 @@ class TransactionExtractor:
                 print(f"Marked {len(processed_message_ids)} messages as processed (no transactions)")
             
             return True
+        except requests.exceptions.RequestException as e:
+            print(f"Request error saving transactions: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"Response status: {e.response.status_code}")
+                print(f"Response body: {e.response.text}")
+            return False
         except Exception as e:
-            print(f"Error saving transactions: {e}")
+            print(f"Unexpected error saving transactions: {e}")
             return False
     
     def extract_balance_from_message(self, message_body: str) -> float:
@@ -154,10 +179,22 @@ class TransactionExtractor:
         
         transactions = []
         processed_message_ids = []
-        confidence_stats = {'high': 0, 'medium': 0, 'low': 0, 'skipped': 0}
+        confidence_stats = {'high': 0, 'medium': 0, 'low': 0, 'skipped': 0, 'duplicates': 0}
+        seen_fingerprints = set()  # Track transaction fingerprints
         
         for message in messages:
-            result = self.confidence_extractor.extract_with_confidence(message['message_body'])
+            sender = message.get('sender', '')
+            result = self.confidence_extractor.extract_with_confidence(message['message_body'], sender)
+            
+            # Check for duplicates using transaction fingerprint + user_id
+            if result['is_transaction'] and 'transaction_fingerprint' in result:
+                user_fingerprint = f"{message['user_id']}_{result['transaction_fingerprint']}"
+                if user_fingerprint in seen_fingerprints:
+                    confidence_stats['duplicates'] += 1
+                    print(f"Skipping duplicate transaction: Rs.{result['amount']} for user {message['user_id']}")
+                    processed_message_ids.append(message['id'])
+                    continue
+                seen_fingerprints.add(user_fingerprint)
             
             # Track confidence statistics
             if result['confidence'] >= self.HIGH_CONFIDENCE:
@@ -179,6 +216,7 @@ class TransactionExtractor:
         print(f"   Medium (50-79%): {confidence_stats['medium']} transactions") 
         print(f"   Low (1-49%): {confidence_stats['low']} transactions")
         print(f"   Skipped (0%): {confidence_stats['skipped']} messages")
+        print(f"   Duplicates: {confidence_stats['duplicates']} transactions")
         
         if self.save_transactions(transactions, processed_message_ids):
             print(f"Successfully processed {len(messages)} messages, created {len(transactions)} transactions!")
