@@ -13,6 +13,8 @@ class FinancialInsight extends Model {
   public expense!: number | null;
   public balance!: number | null;
   public notes!: string | null;
+  public data_value!: object | null;
+  public generated_at!: Date;
   public user_id!: string;
 
   // Declare associations
@@ -62,6 +64,14 @@ FinancialInsight.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    data_value: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    generated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
     user_id: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -75,7 +85,9 @@ FinancialInsight.init(
   {
     sequelize,
     tableName: "financial_insights",
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'generated_at',
+    updatedAt: false,
     indexes: [
       {
         fields: ["user_id"],

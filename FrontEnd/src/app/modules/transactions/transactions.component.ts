@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms'; // Import for form control
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { AuthService } from 'app/Service/auth.service';
 import { TransactionService } from 'app/Service/transaction.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // For debouncing search
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
     selector: 'app-transactions',
@@ -25,26 +28,42 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // For debo
         MatIconModule,
         MatPaginatorModule,
         MatProgressBarModule,
+        MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
         ReactiveFormsModule,
     ],
 })
 export class TransactionsComponent implements OnInit {
-    allTransactions: any[] = [];
-    filteredTransactions: any[] = []; // Store filtered transactions for search
-    displayedTransactions: any[] = [];
+    transactions: any[] = [];
     selectedTransaction: any = null;
     userId: string | null = null;
     isLoading: boolean = false;
+    categories: string[] = [];
+    showFilters: boolean = false;
 
-    // Paginator properties
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    pageSizeOptions: number[] = [5, 10, 25, 100];
-    pageSize: number = 10;
-    pageIndex: number = 0;
-    totalTransactions: number = 0;
+    // Pagination
+    pagination = {
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: 10
+    };
+    pageSizeOptions: number[] = [5, 10, 25, 50];
 
-    // Search control
-    searchControl = new FormControl('');
+    // Filter form
+    filterForm = new FormGroup({
+        search: new FormControl(''),
+        startDate: new FormControl(''),
+        endDate: new FormControl(''),
+        transaction_type: new FormControl(''),
+        category: new FormControl(''),
+        minAmount: new FormControl(''),
+        maxAmount: new FormControl(''),
+        account_number: new FormControl(''),
+        sortBy: new FormControl('transaction_date'),
+        sortOrder: new FormControl('DESC')
+    });
 
     constructor(
         private transactionService: TransactionService,
@@ -53,23 +72,24 @@ export class TransactionsComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        // Get the userId from localStorage
         this.userId = this.authService.getUserId();
         if (this.userId) {
             this.fetchTransactions();
+            this.fetchCategories();
         } else {
             console.error('User ID not found in localStorage. Please log in.');
             this.router.navigate(['/sign-in']);
         }
 
-        // Set up search functionality with debounce
-        this.searchControl.valueChanges
+        // Set up filter form changes with debounce
+        this.filterForm.valueChanges
             .pipe(
-                debounceTime(300), // Wait 300ms after typing stops
-                distinctUntilChanged() // Only emit if the value has changed
+                debounceTime(300),
+                distinctUntilChanged()
             )
-            .subscribe((searchTerm) => {
-                this.filterTransactions(searchTerm || '');
+            .subscribe(() => {
+                this.pagination.currentPage = 1;
+                this.fetchTransactions();
             });
     }
 
@@ -77,88 +97,127 @@ export class TransactionsComponent implements OnInit {
         if (!this.userId) return;
 
         this.isLoading = true;
-        this.transactionService.getTransactionsByUserId(this.userId).subscribe({
+        const filters = this.buildFilters();
+        
+        this.transactionService.getTransactionsByUserId(this.userId, filters).subscribe({
             next: (response) => {
-                // Parse the amount field from string to number
-                this.allTransactions = (response.data || []).map(
+                this.transactions = (response.data.transactions || []).map(
                     (transaction) => ({
                         ...transaction,
-                        amount: transaction.amount
-                            ? parseFloat(transaction.amount)
-                            : 0,
+                        amount: transaction.amount ? parseFloat(transaction.amount) : 0,
                     })
                 );
-                this.filteredTransactions = [...this.allTransactions]; // Initialize filtered transactions
-                this.totalTransactions = this.filteredTransactions.length;
-                this.updateDisplayedTransactions();
+                this.pagination = response.data.pagination;
                 this.isLoading = false;
             },
             error: (error) => {
                 console.error('Error fetching transactions:', error);
-                this.allTransactions = [];
-                this.filteredTransactions = [];
-                this.displayedTransactions = [];
-                this.totalTransactions = 0;
+                this.transactions = [];
+                this.pagination = { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 10 };
                 this.isLoading = false;
             },
         });
     }
 
-    filterTransactions(searchTerm: string): void {
-        if (!searchTerm) {
-            this.filteredTransactions = [...this.allTransactions];
-        } else {
-            const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            this.filteredTransactions = this.allTransactions.filter(
-                (transaction) =>
-                    transaction.reference_id
-                        .toLowerCase()
-                        .includes(lowerCaseSearchTerm) ||
-                    transaction.account_number
-                        .toLowerCase()
-                        .includes(lowerCaseSearchTerm) ||
-                    transaction.transaction_type
-                        .toLowerCase()
-                        .includes(lowerCaseSearchTerm) ||
-                    transaction.category
-                        .toLowerCase()
-                        .includes(lowerCaseSearchTerm) ||
-                    transaction.description
-                        .toLowerCase()
-                        .includes(lowerCaseSearchTerm)
-            );
-        }
-        this.totalTransactions = this.filteredTransactions.length;
-        this.pageIndex = 0; // Reset to first page on search
-        if (this.paginator) {
-            this.paginator.pageIndex = 0;
-        }
-        this.updateDisplayedTransactions();
+    fetchCategories(): void {
+        if (!this.userId) return;
+        
+        this.transactionService.getTransactionCategories(this.userId).subscribe({
+            next: (response) => {
+                this.categories = response.data || [];
+            },
+            error: (error) => {
+                console.error('Error fetching categories:', error);
+                this.categories = [];
+            }
+        });
     }
 
-    updateDisplayedTransactions(): void {
-        const startIndex = this.pageIndex * this.pageSize;
-        const endIndex = startIndex + this.pageSize;
-        this.displayedTransactions = this.filteredTransactions.slice(
-            startIndex,
-            endIndex
-        );
+    buildFilters(): any {
+        const formValue = this.filterForm.value;
+        const filters: any = {
+            page: this.pagination.currentPage,
+            limit: this.pagination.itemsPerPage
+        };
+
+        if (formValue.search) filters.search = formValue.search;
+        if (formValue.startDate) filters.startDate = formValue.startDate;
+        if (formValue.endDate) filters.endDate = formValue.endDate;
+        if (formValue.transaction_type) filters.transaction_type = formValue.transaction_type;
+        if (formValue.category) filters.category = formValue.category;
+        if (formValue.minAmount) filters.minAmount = formValue.minAmount;
+        if (formValue.maxAmount) filters.maxAmount = formValue.maxAmount;
+        if (formValue.account_number) filters.account_number = formValue.account_number;
+        if (formValue.sortBy) filters.sortBy = formValue.sortBy;
+        if (formValue.sortOrder) filters.sortOrder = formValue.sortOrder;
+
+        return filters;
     }
 
     onPageChange(event: any): void {
-        this.pageIndex = event.pageIndex;
-        this.pageSize = event.pageSize;
-        this.updateDisplayedTransactions();
+        this.pagination.currentPage = event.pageIndex + 1;
+        this.pagination.itemsPerPage = event.pageSize;
+        this.fetchTransactions();
+    }
+
+    toggleFilters(): void {
+        this.showFilters = !this.showFilters;
+    }
+
+    clearFilters(): void {
+        this.filterForm.reset({
+            sortBy: 'transaction_date',
+            sortOrder: 'DESC'
+        });
+        this.pagination.currentPage = 1;
     }
 
     toggleDetails(transactionId: string): void {
         this.selectedTransaction =
             this.selectedTransaction?.id === transactionId
                 ? null
-                : this.displayedTransactions.find(
-                      (t) => t.id === transactionId
-                  );
+                : this.transactions.find((t) => t.id === transactionId);
     }
+
+    setTransactionType(type: string): void {
+        this.filterForm.get('transaction_type')?.setValue(type);
+    }
+
+    setSortOrder(order: string): void {
+        this.filterForm.get('sortOrder')?.setValue(order);
+    }
+
+    getActiveFiltersCount(): number {
+        const formValue = this.filterForm.value;
+        let count = 0;
+        if (formValue.search) count++;
+        if (formValue.startDate) count++;
+        if (formValue.endDate) count++;
+        if (formValue.transaction_type) count++;
+        if (formValue.category) count++;
+        if (formValue.minAmount) count++;
+        if (formValue.maxAmount) count++;
+        if (formValue.account_number) count++;
+        return count;
+    }
+
+    getTotalCredit(): number {
+        return this.transactions
+            .filter(t => t.transaction_type === 'credit')
+            .reduce((sum, t) => sum + t.amount, 0);
+    }
+
+    getTotalDebit(): number {
+        return this.transactions
+            .filter(t => t.transaction_type === 'debit')
+            .reduce((sum, t) => sum + t.amount, 0);
+    }
+
+    getNetBalance(): number {
+        return this.getTotalCredit() - this.getTotalDebit();
+    }
+
+    Math = Math;
 
     trackByFn(index: number, item: any): string {
         return item.id;

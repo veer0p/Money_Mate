@@ -6,6 +6,7 @@ import messageRouters from "./routes/messageRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import processingRoutes from "./routes/processingRoutes";
+import insightRoutes from "./routes/insightRoutes";
 import bodyParser from "body-parser";
 import path from "path";
 
@@ -50,5 +51,6 @@ app.use("/api/messages", messageRouters);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/processing", processingRoutes);
+app.use("/api/insights", insightRoutes);
 
 export default app;

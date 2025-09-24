@@ -1,15 +1,159 @@
-.transactions-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(
-            0,
-            1fr
-        ) minmax(0, 1fr) minmax(0, 1fr) 60px;
+// Filter sidebar styles
+.filter-sidebar {
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
 
-    @media (max-width: 1024px) {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 60px;
-    }
+.filter-section {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
 
-    @media (max-width: 640px) {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 60px;
+.filter-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+// Button text visibility fixes
+.filter-sidebar button {
+    color: inherit !important;
+}
+
+.filter-sidebar button span {
+    color: inherit !important;
+}
+
+.filter-sidebar button[color="primary"] span {
+    color: white !important;
+}
+
+// Filter toggle buttons with borders
+.filter-toggle-btn {
+    border: 2px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    background-color: white !important;
+}
+
+.filter-toggle-btn:hover {
+    border-color: #3b82f6 !important;
+    background-color: #f8fafc !important;
+}
+
+.selected-filter-btn {
+    border-color: #3b82f6 !important;
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+}
+
+.selected-filter-btn span {
+    color: #1d4ed8 !important;
+    font-weight: 600 !important;
+}
+
+// Dark mode support
+.dark .filter-toggle-btn {
+    border-color: #374151 !important;
+    background-color: #1f2937 !important;
+}
+
+.dark .filter-toggle-btn:hover {
+    border-color: #60a5fa !important;
+    background-color: #111827 !important;
+}
+
+.dark .selected-filter-btn {
+    border-color: #60a5fa !important;
+    background-color: #1e3a8a !important;
+    color: #93c5fd !important;
+}
+
+.dark .selected-filter-btn span {
+    color: #93c5fd !important;
+}
+
+// Hover effects for interactive elements
+.filter-sidebar button:hover:not(.filter-toggle-btn) {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+// Icon spacing improvements
+.filter-sidebar .mr-2 {
+    margin-right: 0.5rem;
+}
+
+.filter-sidebar .mr-3 {
+    margin-right: 0.75rem;
+}
+
+// Responsive transaction cards
+.transaction-card {
+    transition: all 0.2s ease;
+    border-radius: 0.5rem;
+}
+
+.transaction-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+// Summary cards gradient animations
+.summary-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.summary-card:hover::before {
+    left: 100%;
+}
+
+// Mobile optimizations
+@media (max-width: 768px) {
+    .mobile-transaction {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
     }
+    
+    .mobile-transaction:last-child {
+        margin-bottom: 0;
+    }
+}
+
+// Badge animations
+.badge-animate {
+    transition: transform 0.2s ease;
+}
+
+.badge-animate:hover {
+    transform: scale(1.05);
+}
+
+// Custom scrollbar for sidebar
+.filter-sidebar .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filter-sidebar .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-sidebar .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+.filter-sidebar .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
 }

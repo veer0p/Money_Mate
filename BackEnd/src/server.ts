@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import insightsScheduler from "./services/insightsScheduler";
 // ... other imports ...
 
 const app = express();
@@ -11,5 +12,8 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// Start insights scheduler
+insightsScheduler.start();
 
 // ... rest of your server setup code ...

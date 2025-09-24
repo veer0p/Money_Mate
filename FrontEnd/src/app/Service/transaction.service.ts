@@ -23,7 +23,32 @@ interface Transaction {
 interface TransactionApiResponse {
     status: string;
     message: string;
-    data: Transaction[];
+    data: {
+        transactions: Transaction[];
+        pagination: {
+            currentPage: number;
+            totalPages: number;
+            totalItems: number;
+            itemsPerPage: number;
+            hasNextPage: boolean;
+            hasPrevPage: boolean;
+        };
+    };
+}
+
+interface TransactionFilters {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'ASC' | 'DESC';
+    startDate?: string;
+    endDate?: string;
+    transaction_type?: 'credit' | 'debit';
+    category?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    account_number?: string;
+    search?: string;
 }
 
 @Injectable({
@@ -45,12 +70,32 @@ export class TransactionService {
     }
 
     getTransactionsByUserId(
-        userId: string
+        userId: string,
+        filters?: TransactionFilters
     ): Observable<TransactionApiResponse> {
-        const url = `${this.BASE_URL}/transactions/user/${userId}`;
-        console.log('Fetching transactions from:', url); // Debug
+        let url = `${this.BASE_URL}/transactions/user/${userId}`;
+        
+        if (filters) {
+            const params = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    params.append(key, value.toString());
+                }
+            });
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+        }
+        
         return this.http
             .get<TransactionApiResponse>(url)
+            .pipe(catchError(this.handleError));
+    }
+
+    getTransactionCategories(userId: string): Observable<{status: string; data: string[]}> {
+        const url = `${this.BASE_URL}/transactions/user/${userId}/categories`;
+        return this.http
+            .get<{status: string; data: string[]}>(url)
             .pipe(catchError(this.handleError));
     }
 }

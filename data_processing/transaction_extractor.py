@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from typing import Dict, List, Optional
 from enhanced_confidence_extractor import EnhancedConfidenceExtractor, MessageType
+from transaction_categorizer import TransactionCategorizer
 
 # Set UTF-8 encoding for Windows
 if sys.platform == 'win32':
@@ -15,6 +16,7 @@ class TransactionExtractor:
     def __init__(self, api_base_url: str):
         self.api_base_url = api_base_url
         self.confidence_extractor = EnhancedConfidenceExtractor()
+        self.categorizer = TransactionCategorizer()
         
         # Confidence thresholds
         self.HIGH_CONFIDENCE = 80
@@ -48,11 +50,15 @@ class TransactionExtractor:
             except:
                 transaction_date = datetime.now()
         
+        # Categorize the transaction
+        category = self.categorizer.categorize(message_body)
+        
         return {
             'user_id': message['user_id'],
             'source_message_id': message['id'],
             'account_number': str(result['account_number']) if result['account_number'] else 'unknown',
             'transaction_type': result['transaction_type'],
+            'category': category,
             'amount': float(result['amount']),
             'currency': 'INR',
             'transaction_date': transaction_date.isoformat() if hasattr(transaction_date, 'isoformat') else str(transaction_date),

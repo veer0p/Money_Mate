@@ -14,189 +14,378 @@
         <!-- Title -->
         <div class="text-4xl font-extrabold tracking-tight">Transactions</div>
         <!-- Actions -->
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+        <div class="mt-6 flex shrink-0 items-center gap-4 sm:ml-4 sm:mt-0">
             <!-- Search -->
-            <mat-form-field
-                class="fuse-mat-dense fuse-mat-rounded min-w-64"
-                [subscriptSizing]="'dynamic'"
-            >
-                <mat-icon
-                    class="icon-size-5"
-                    matPrefix
-                    [svgIcon]="'heroicons_solid:magnifying-glass'"
-                ></mat-icon>
-                <input
-                    matInput
-                    [autocomplete]="'off'"
-                    [placeholder]="'Search transactions'"
-                    [formControl]="searchControl"
-                />
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" [placeholder]="'Search transactions'" [formControl]="filterForm.get('search')" />
             </mat-form-field>
-            <!-- Add transaction button -->
-            <!-- <button class="ml-4" mat-flat-button [color]="'primary'">
-                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                <span class="ml-2 mr-1">Add</span>
-            </button> -->
+            
+            <!-- Filter Toggle -->
+            <button mat-stroked-button (click)="toggleFilters()" class="relative">
+                <mat-icon [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+                <span class="ml-2 hidden sm:inline">Filters</span>
+                @if (getActiveFiltersCount() > 0) {
+                    <span class="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-medium">
+                        {{ getActiveFiltersCount() }}
+                    </span>
+                }
+            </button>
         </div>
     </div>
 
     <!-- Main -->
     <div class="flex flex-auto overflow-hidden">
-        <!-- Transactions list -->
-        <div
-            class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto"
-        >
-            @if (displayedTransactions.length > 0) {
-                <div class="grid">
-                    <!-- Header -->
-                    <div
-                        class="transactions-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                    >
-                        <div class="hidden md:block">Reference ID</div>
-                        <div>Account Number</div>
-                        <div class="hidden sm:block">Transaction Type</div>
-                        <div class="hidden lg:block">Category</div>
-                        <div class="hidden lg:block">Amount</div>
-                        <div class="hidden sm:block">Transaction Date</div>
-                        <div>Details</div>
+        <!-- Left Sidebar Filters -->
+        @if (showFilters) {
+            <div class="filter-sidebar w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col" [formGroup]="filterForm">
+                <!-- Sidebar Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                            <mat-icon class="text-blue-600 dark:text-blue-400 text-lg" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
                     </div>
-                    <!-- Rows -->
-                    @for (
-                        transaction of displayedTransactions;
-                        track trackByFn($index, transaction)
-                    ) {
-                        <div
-                            class="transactions-grid grid items-center gap-4 border-b px-6 py-3 md:px-8"
-                        >
-                            <!-- Reference ID -->
-                            <div class="hidden truncate md:block">
-                                {{ transaction.reference_id }}
-                            </div>
-                            <!-- Account Number -->
-                            <div class="truncate">
-                                {{ transaction.account_number }}
-                            </div>
-                            <!-- Transaction Type -->
-                            <div class="hidden sm:block">
-                                {{ transaction.transaction_type | titlecase }}
-                            </div>
-                            <!-- Category -->
-                            <div class="hidden lg:block">
-                                {{ transaction.category }}
-                            </div>
-                            <!-- Amount -->
-                            <div class="hidden lg:block">
-                                {{
-                                    transaction.amount
-                                        | currency
-                                            : transaction.currency
-                                            : 'symbol'
-                                            : '1.2-2'
-                                }}
-                            </div>
-                            <!-- Transaction Date -->
-                            <div class="hidden sm:block">
-                                {{
-                                    transaction.transaction_date
-                                        | date: 'mediumDate'
-                                }}
-                            </div>
-                            <!-- Details button -->
-                            <div>
-                                <button
-                                    class="h-7 min-h-7 min-w-10 px-2 leading-6"
+                    <button mat-icon-button (click)="toggleFilters()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                    </button>
+                </div>
+
+                <!-- Scrollable Filter Content -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Quick Actions -->
+                    <div class="flex space-x-2">
+                        <button mat-stroked-button (click)="clearFilters()" class="flex-1 text-sm">
+                            <mat-icon class="mr-3 text-base" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+                            <span>Reset</span>
+                        </button>
+                        <button mat-raised-button color="primary" class="flex-1 text-sm">
+                            <mat-icon class="mr-3 text-base" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+                            <span>Apply</span>
+                        </button>
+                    </div>
+
+                    <!-- Date Range Section -->
+                    <div class="filter-section">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Date Range</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>From Date</mat-label>
+                                <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+                                <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #startPicker></mat-datepicker>
+                            </mat-form-field>
+                            <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>To Date</mat-label>
+                                <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+                                <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #endPicker></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Type Section -->
+                    <div class="filter-section">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Type</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button 
+                                mat-stroked-button
+                                [class.selected-filter-btn]="filterForm.get('transaction_type')?.value === 'credit'"
+                                (click)="setTransactionType('credit')"
+                                class="text-sm h-10 filter-toggle-btn">
+                                <mat-icon class="mr-2 text-green-500" [svgIcon]="'heroicons_outline:arrow-down-left'"></mat-icon>
+                                <span>Credit</span>
+                            </button>
+                            <button 
+                                mat-stroked-button
+                                [class.selected-filter-btn]="filterForm.get('transaction_type')?.value === 'debit'"
+                                (click)="setTransactionType('debit')"
+                                class="text-sm h-10 filter-toggle-btn">
+                                <mat-icon class="mr-2 text-red-500" [svgIcon]="'heroicons_outline:arrow-up-right'"></mat-icon>
+                                <span>Debit</span>
+                            </button>
+                        </div>
+                        @if (filterForm.get('transaction_type')?.value) {
+                            <button mat-button (click)="setTransactionType('')" class="w-full mt-2 text-xs text-gray-500">
+                                <span>Clear selection</span>
+                            </button>
+                        }
+                    </div>
+
+                    <!-- Category Section -->
+                    <div class="filter-section">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Category</h3>
+                        </div>
+                        <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                            <mat-select formControlName="category">
+                                <mat-option value="">All Categories</mat-option>
+                                @for (category of categories; track category) {
+                                    <mat-option [value]="category">{{ category }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <!-- Amount Range Section -->
+                    <div class="filter-section">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:currency-rupee'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Amount</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Min Amount</mat-label>
+                                <input matInput type="number" formControlName="minAmount">
+                            </mat-form-field>
+                            <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Max Amount</mat-label>
+                                <input matInput type="number" formControlName="maxAmount">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <!-- Account Section -->
+                    <div class="filter-section">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:credit-card'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Account</h3>
+                        </div>
+                        <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                            <input matInput formControlName="account_number" placeholder="Account number">
+                        </mat-form-field>
+                    </div>
+
+                    <!-- Sort Section -->
+                    <div class="filter-section pb-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <mat-icon class="text-gray-500 text-lg" [svgIcon]="'heroicons_outline:bars-arrow-up'"></mat-icon>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white uppercase tracking-wide">Sort</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <mat-form-field class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                <mat-select formControlName="sortBy">
+                                    <mat-option value="transaction_date">Date</mat-option>
+                                    <mat-option value="amount">Amount</mat-option>
+                                    <mat-option value="category">Category</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button 
                                     mat-stroked-button
-                                    (click)="toggleDetails(transaction.id)"
-                                >
-                                    <mat-icon
-                                        class="icon-size-5"
-                                        [svgIcon]="
-                                            selectedTransaction?.id ===
-                                            transaction.id
-                                                ? 'heroicons_solid:chevron-up'
-                                                : 'heroicons_solid:chevron-down'
-                                        "
-                                    ></mat-icon>
+                                    [class.selected-filter-btn]="filterForm.get('sortOrder')?.value === 'DESC'"
+                                    (click)="setSortOrder('DESC')"
+                                    class="text-sm h-10 filter-toggle-btn">
+                                    <mat-icon class="mr-2" [svgIcon]="'heroicons_outline:arrow-down'"></mat-icon>
+                                    <span>Desc</span>
+                                </button>
+                                <button 
+                                    mat-stroked-button
+                                    [class.selected-filter-btn]="filterForm.get('sortOrder')?.value === 'ASC'"
+                                    (click)="setSortOrder('ASC')"
+                                    class="text-sm h-10 filter-toggle-btn">
+                                    <mat-icon class="mr-2" [svgIcon]="'heroicons_outline:arrow-up'"></mat-icon>
+                                    <span>Asc</span>
                                 </button>
                             </div>
                         </div>
-                        <div class="grid">
-                            @if (selectedTransaction?.id === transaction.id) {
-                                <ng-container
-                                    *ngTemplateOutlet="
-                                        rowDetailsTemplate;
-                                        context: { $implicit: transaction }
-                                    "
-                                ></ng-container>
-                            }
-                        </div>
-                    }
-                </div>
-
-                <!-- Paginator -->
-                <mat-paginator
-                    class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
-                    [length]="totalTransactions"
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [pageSizeOptions]="pageSizeOptions"
-                    [showFirstLastButtons]="true"
-                    (page)="onPageChange($event)"
-                >
-                </mat-paginator>
-            } @else {
-                <div
-                    class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16"
-                >
-                    There are no transactions!
-                </div>
-            }
-
-            <!-- Details Template -->
-            <ng-template #rowDetailsTemplate let-transaction>
-                <div class="overflow-hidden shadow-lg">
-                    <div class="flex border-b p-8">
-                        <div class="flex flex-col">
-                            <h3 class="text-lg font-semibold">
-                                Transaction Details
-                            </h3>
-                            <p>
-                                <strong>Reference ID:</strong>
-                                {{ transaction.reference_id }}
-                            </p>
-                            <p>
-                                <strong>Account Number:</strong>
-                                {{ transaction.account_number }}
-                            </p>
-                            <p>
-                                <strong>Type:</strong>
-                                {{ transaction.transaction_type | titlecase }}
-                            </p>
-                            <p>
-                                <strong>Category:</strong>
-                                {{ transaction.category }}
-                            </p>
-                            <p>
-                                <strong>Amount:</strong>
-                                {{
-                                    transaction.amount
-                                        | currency
-                                            : transaction.currency
-                                            : 'symbol'
-                                            : '1.2-2'
-                                }}
-                            </p>
-                            <p>
-                                <strong>Date:</strong>
-                                {{
-                                    transaction.transaction_date
-                                        | date: 'mediumDate'
-                                }}
-                            </p>
-                        </div>
                     </div>
                 </div>
-            </ng-template>
+            </div>
+        }
+
+        <!-- Transactions Content -->
+        <div class="flex flex-auto flex-col overflow-hidden bg-white dark:bg-gray-900">
+            @if (transactions.length > 0) {
+                <!-- Transaction Table -->
+                <div class="flex-1 overflow-y-auto">
+                    <div class="w-full pr-4">
+                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- Table Header -->
+                            <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" style="width: 60%">
+                                        Description
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell" style="width: 10%">
+                                        Type
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell" style="width: 10%">
+                                        Category
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" style="width: 10%">
+                                        Amount
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell" style="width: 10%">
+                                        Date
+                                    </th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" style="width: auto">
+                                        <mat-icon class="text-gray-400" [svgIcon]="'heroicons_outline:ellipsis-horizontal'"></mat-icon>
+                                    </th>
+                                </tr>
+                            </thead>
+                            
+                            <!-- Table Body -->
+                            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                @for (transaction of transactions; track trackByFn($index, transaction)) {
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                                        <!-- Description -->
+                                        <td class="px-6 py-4" style="width: 60%">
+                                            <div class="flex flex-col">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-white break-words">
+                                                    {{ (transaction.description || 'Transaction') | slice:0:80 }}{{ (transaction.description?.length || 0) > 80 ? '...' : '' }}
+                                                </div>
+                                                <!-- Mobile: Show type and category -->
+                                                <div class="sm:hidden mt-2 flex flex-wrap gap-1">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                                          [ngClass]="{
+                                                            'bg-green-100 text-green-800': transaction.transaction_type === 'credit',
+                                                            'bg-red-100 text-red-800': transaction.transaction_type === 'debit'
+                                                          }">
+                                                        {{ transaction.transaction_type | titlecase }}
+                                                    </span>
+                                                    <span class="lg:hidden inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                                                        {{ transaction.category || 'Uncategorized' }}
+                                                    </span>
+                                                </div>
+                                                <!-- Mobile: Show date -->
+                                                <div class="md:hidden mt-1 text-xs text-gray-500">
+                                                    {{ transaction.transaction_date | date: 'MMM d, y' }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Type (Hidden on mobile) -->
+                                        <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell" style="width: 10%">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                                  [ngClass]="{
+                                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': transaction.transaction_type === 'credit',
+                                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': transaction.transaction_type === 'debit'
+                                                  }">
+                                                <mat-icon class="mr-1 text-xs" 
+                                                          [svgIcon]="transaction.transaction_type === 'credit' ? 'heroicons_outline:arrow-down-left' : 'heroicons_outline:arrow-up-right'">
+                                                </mat-icon>
+                                                {{ transaction.transaction_type | titlecase }}
+                                            </span>
+                                        </td>
+                                        
+                                        <!-- Category (Hidden on mobile/tablet) -->
+                                        <td class="px-6 py-4 whitespace-nowrap hidden lg:table-cell" style="width: 10%">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                <div class="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                                {{ transaction.category || 'Uncategorized' }}
+                                            </span>
+                                        </td>
+                                        
+                                        <!-- Amount -->
+                                        <td class="px-6 py-4 whitespace-nowrap text-right" style="width: 10%">
+                                            <div class="text-sm font-semibold" 
+                                                 [ngClass]="{
+                                                   'text-green-600 dark:text-green-400': transaction.transaction_type === 'credit',
+                                                   'text-red-600 dark:text-red-400': transaction.transaction_type === 'debit'
+                                                 }">
+                                                {{ transaction.transaction_type === 'credit' ? '+' : '-' }}
+                                                {{ transaction.amount | currency : transaction.currency : 'symbol' : '1.2-2' }}
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Date (Hidden on mobile) -->
+                                        <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell" style="width: 10%">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                {{ transaction.transaction_date | date: 'MMM d, y' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ transaction.transaction_date | date: 'h:mm a' }}
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Actions -->
+                                        <td class="px-6 py-4 whitespace-nowrap text-center" style="width: auto">
+                                            <button mat-icon-button 
+                                                    (click)="toggleDetails(transaction.id)"
+                                                    class="h-8 w-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                                <mat-icon [svgIcon]="selectedTransaction?.id === transaction.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'"></mat-icon>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Expandable Details Row -->
+                                    @if (selectedTransaction?.id === transaction.id) {
+                                        <tr class="bg-gray-50 dark:bg-gray-800">
+                                            <td colspan="6" class="px-6 py-4">
+                                                <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: { $implicit: transaction }"></ng-container>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                            Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to 
+                            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) }} 
+                            of {{ pagination.totalItems }} results
+                        </div>
+                        <mat-paginator
+                            [length]="pagination.totalItems"
+                            [pageIndex]="pagination.currentPage - 1"
+                            [pageSize]="pagination.itemsPerPage"
+                            [pageSizeOptions]="pageSizeOptions"
+                            [showFirstLastButtons]="true"
+                            (page)="onPageChange($event)"
+                            class="border-0">
+                        </mat-paginator>
+                    </div>
+                </div>
+            } @else {
+                <div class="flex flex-col items-center justify-center h-96 text-center">
+                    <mat-icon class="text-gray-300 dark:text-gray-600 text-6xl mb-4" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No transactions found</h3>
+                    <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters or search criteria</p>
+                </div>
+            }
         </div>
     </div>
+
+    <!-- Details Template -->
+    <ng-template #rowDetailsTemplate let-transaction>
+        <div class="p-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reference ID</label>
+                    <p class="text-sm font-mono text-gray-900 dark:text-white">{{ transaction.reference_id || 'N/A' }}</p>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Account Number</label>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ transaction.account_number || 'N/A' }}</p>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Full Date & Time</label>
+                    <p class="text-sm text-gray-900 dark:text-white">{{ transaction.transaction_date | date: 'medium' }}</p>
+                </div>
+                
+                @if (transaction.description) {
+                    <div class="space-y-1 sm:col-span-2 lg:col-span-3">
+                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Description</label>
+                        <p class="text-sm text-gray-900 dark:text-white">{{ transaction.description }}</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </ng-template>
 </div>
